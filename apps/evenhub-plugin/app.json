@@ -2,7 +2,7 @@
   "package_id": "com.luxiangnan.g2visionvoice",
   "edition": "202601",
   "name": "天禄 G2 运维助手",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "min_app_version": "2.0.0",
   "min_sdk_version": "0.0.9",
   "entrypoint": "index.html",
