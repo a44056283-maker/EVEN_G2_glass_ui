@@ -286,5 +286,23 @@ e41804b4f054a13f7cd72cdc64ebcd59370f2a3afd940edd321c74951a70dba2
 
 ```
 CLAUDE_DONE: Day 0 工作流闭环建立
-GPT_REVIEWING: 待用户上传 ZIP 给 GPT 审批
+CLAUDE_DONE: Day 1 R1准确度+首页4菜单 代码完成
+GPT_REVIEWING: 待 GPT 审核 Day1 完成报告
 ```
+
+### Day 1 完成项
+
+| 模块 | 状态 |
+|------|------|
+| R1 取消返回机制 | ✓ 代码完成 |
+| 首页 4 菜单一行 | ✓ 代码完成 |
+| 系统设置可见可进入 | ✓ 代码完成 |
+| 语音意图触发视觉 | ✓ 代码完成 |
+| 交易标签分类 | ✓ 代码完成 |
+| G2 页面去横线框线 | ✓ 代码完成 |
+
+### 当前版本
+
+- **版本**：0.5.2
+- **SHA256**：`a3ce89051b8fd8304b467823504de7ef7379420130911db31eba196b5d36f83a`
+- **EHPK**：apps/evenhub-plugin/g2-vision-voice-assistant.ehpk
