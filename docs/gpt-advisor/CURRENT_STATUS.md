@@ -225,7 +225,66 @@ e41804b4f054a13f7cd72cdc64ebcd59370f2a3afd940edd321c74951a70dba2
 最近版本号：
 
 ```text
-0.4.0
+0.5.0
 ```
 
 后续每次打包必须写入 `test-reports/`。
+
+## 2026-05-04 11:45 Day 0 完成（工作流闭环 + UI 锁页冻结）
+
+### 天禄 G2 进化日程启动
+
+来源计划包：`/Users/luxiangnan/Desktop/GPT协作解决方案/1、天禄 G2 进化日程 + Claude:GPT 闭环工作流包.zip`
+
+已读取：
+- `PROJECT_EVOLUTION_ROADMAP_20260504.md` — 完整 18 天计划
+- `CLOSED_LOOP_WORKFLOW_GPT_CLAUDE.md` — Claude ↔ GPT 闭环工作流
+- `CLAUDE_REPORTING_RULES.md` — 固定报告规则
+
+### Day 0 验收清单
+
+| 验收项 | 状态 |
+|---|---|
+| `/g2-status` 命令 | ✓ 当前项目有完整状态文件 |
+| `/g2-pack` 命令 | ✓ npm run typecheck/build/pack 正常工作 |
+| 每次任务有 report | ✓ test-reports/ 目录已建立 |
+| 每次任务有 EHPK + SHA256 | ✓ 本次已生成 |
+| Phone/Glass UI 隔离 | ✓ phoneUiState.ts / phonePageRegistry.ts 已建立 |
+| Claude → GPT → Claude 闭环 | ✓ iCloud outbox/inbox-from-gpt 已配置 |
+
+### 当前 EHPK 状态
+
+- **版本**：`0.5.0`
+- **SHA256**：`b6aaaaa934556671de3dce29571ee96ccb6b86a2c47a2f621d2d626dd65e3394`
+- **大小**：79471 bytes
+- **路径**：`apps/evenhub-plugin/g2-vision-voice-assistant.ehpk`
+- **typecheck**：✓ PASSED
+- **build**：✓ PASSED（30 modules）
+
+### P0 问题冻结清单（Day 0 截止）
+
+以下问题必须在 Day 1-5 (05-05 ~ 05-08) 完成：
+
+1. **P0-R1-ACCURACY**：R1 选择视觉识别后，手机取消拍照，眼镜仍显示拍照采集
+2. **P0-GLASS-HOME-4MENU**：首页必须按用户最终模板显示 4 项一行
+3. **P0-GLASS-SYSTEM-SETTINGS**：系统设置菜单看不见但能误选
+4. **P0-VISION-CANCEL**：手机取消拍照/选图后眼镜卡死
+5. **P0-VOICE-LINKAGE**：G2 麦克风 PCM 语音链路未真机验收
+6. **P0-SPEECH-INTENT**：语音意图触发视觉未稳定
+
+### Day 1 计划（2026-05-05）
+
+```
+1. 首页改成用户最终模板（4 项一行）
+2. 系统设置可见可进入
+3. R1 焦点与眼镜菜单完全一致
+4. 所有眼镜页面去掉横线和框线
+5. 给所有眼镜端异步流程加 activeGlassSessionId
+```
+
+### 闭环状态
+
+```
+CLAUDE_DONE: Day 0 工作流闭环建立
+GPT_REVIEWING: 待用户上传 ZIP 给 GPT 审批
+```
