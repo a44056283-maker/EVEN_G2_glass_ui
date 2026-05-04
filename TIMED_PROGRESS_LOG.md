@@ -468,3 +468,26 @@ R1 选择视觉识别
 - 验证：`npm run typecheck`、`npm run build`、`npm run pack:g2` 均通过。
 - EHPK：`apps/evenhub-plugin/g2-vision-voice-assistant.ehpk`。
 - SHA256：`eb64b0948e255b6563a5d2473f506bc8e91663555291e98411fcd1eb0b405341`。
+
+## 2026-05-04 16:00 P0 核心真机冒烟通过
+
+- 阶段：P0 CORE TRUE_DEVICE PASSED
+- 目标：Day2-4 合并冲刺代码修复 + 真机冒烟验收
+- 修改文件：
+  - `apps/evenhub-plugin/src/main.ts`（视觉取消 bug、语音正则、交易 R1 控制）
+  - `docs/gpt-advisor/test-reports/20260504_1600_day2_4_merge_sprint_report.md`
+  - `docs/gpt-advisor/test-reports/20260504_1630_voice_regex_hotfix_report.md`
+- 验证命令：`npm run typecheck`、`npm run build`、`npm run pack:g2`
+- 结果：全部通过
+- EHPK 版本：0.5.5
+- EHPK SHA256：`c36813e7669c7bb2ff3d380450fed35550ccf63f697ed339bab1acc79364ccbf`
+- 真机冒烟验收：6/6 项全部通过
+  1. 首页 4 菜单 + R1 切换 ✓
+  2. 手机取消拍照/选图 → G2 返回首页 ✓
+  3. "帮我看一看这是什么" → 触发视觉 ✓
+  4. "这是啥" → 触发视觉 ✓
+  5. "瞧一瞧" → 触发视觉 ✓
+  6. 交易 R1 next/previous 切标签，click 进详情 ✓
+- 阻塞：无
+- 下一步：P1-STABILIZE-001 稳定性整理，不再随机修改 P0 已通过功能
+- 负责人：Claude / 用户
