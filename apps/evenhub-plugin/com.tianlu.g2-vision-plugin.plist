@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.tianlu.g2-vision-plugin</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/zsh</string>
+    <string>-lc</string>
+    <string>cd '/Users/luxiangnan/Desktop/EVEN G2视觉和语音对讲系统/g2-vision-voice-assistant/apps/evenhub-plugin'; '/Users/luxiangnan/Desktop/EVEN G2视觉和语音对讲系统/.tools/node-current/bin/node' ../../node_modules/vite/bin/vite.js preview --host 0.0.0.0 --port 5173</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>/Users/luxiangnan/Desktop/EVEN G2视觉和语音对讲系统/g2-vision-voice-assistant/logs/launch-plugin.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/luxiangnan/Desktop/EVEN G2视觉和语音对讲系统/g2-vision-voice-assistant/logs/launch-plugin.err.log</string>
+  <key>WorkingDirectory</key>
+  <string>/Users/luxiangnan/Desktop/EVEN G2视觉和语音对讲系统/g2-vision-voice-assistant/apps/evenhub-plugin</string>
+</dict>
+</plist>

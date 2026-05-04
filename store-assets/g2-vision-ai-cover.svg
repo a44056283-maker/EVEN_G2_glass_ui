@@ -1,0 +1,75 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="80" y1="50" x2="1510" y2="850" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#08111E"/>
+      <stop offset="0.48" stop-color="#0E1726"/>
+      <stop offset="1" stop-color="#10251F"/>
+    </linearGradient>
+    <linearGradient id="lens" x1="379" y1="331" x2="1217" y2="559" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#38BDF8"/>
+      <stop offset="0.54" stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#34D399"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="426" y1="337" x2="1154" y2="481" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#DFF6FF"/>
+      <stop offset="1" stop-color="#9AE6CF"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(900 402) rotate(26.5) scale(560 220)">
+      <stop stop-color="#38BDF8" stop-opacity="0.44"/>
+      <stop offset="0.52" stop-color="#22C55E" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#111827" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="260" y="255" width="1080" height="360" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="22" stdDeviation="28" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect x="58" y="58" width="1484" height="784" rx="42" stroke="#213248" stroke-width="2"/>
+  <circle cx="1310" cy="170" r="170" fill="#2563EB" opacity="0.12"/>
+  <circle cx="270" cy="720" r="210" fill="#14B8A6" opacity="0.10"/>
+  <path d="M174 662C360 515 527 522 694 566C835 604 953 687 1110 656C1245 629 1367 542 1450 446" stroke="#2DD4BF" stroke-opacity="0.13" stroke-width="3"/>
+  <path d="M156 707C364 556 550 571 704 614C875 661 982 731 1145 698C1270 672 1391 591 1475 488" stroke="#60A5FA" stroke-opacity="0.13" stroke-width="3"/>
+  <g opacity="0.44">
+    <circle cx="280" cy="210" r="4" fill="#60A5FA"/>
+    <circle cx="338" cy="252" r="2" fill="#34D399"/>
+    <circle cx="1248" cy="248" r="4" fill="#34D399"/>
+    <circle cx="1368" cy="310" r="3" fill="#60A5FA"/>
+    <circle cx="1184" cy="684" r="3" fill="#2DD4BF"/>
+    <circle cx="426" cy="678" r="3" fill="#93C5FD"/>
+  </g>
+
+  <text x="112" y="156" fill="#E5F2FF" font-family="Inter, Arial, sans-serif" font-size="74" font-weight="800" letter-spacing="0">G2 Vision AI</text>
+  <text x="116" y="216" fill="#A7B7C9" font-family="Arial, sans-serif" font-size="30" font-weight="500">g2-视觉-语音助手</text>
+
+  <g filter="url(#shadow)">
+    <ellipse cx="800" cy="420" rx="506" ry="160" fill="url(#glow)"/>
+    <path d="M353 394C388 345 465 318 541 333L674 360C717 369 757 374 800 374C843 374 883 369 926 360L1059 333C1135 318 1212 345 1247 394C1282 444 1255 514 1189 537C1147 552 1102 553 1057 542L928 511C884 501 843 496 800 496C757 496 716 501 672 511L543 542C498 553 453 552 411 537C345 514 318 444 353 394Z" fill="#0B1220" stroke="url(#lens)" stroke-width="10"/>
+    <path d="M440 406C465 378 510 366 557 376L676 402C716 411 758 416 800 416C842 416 884 411 924 402L1043 376C1090 366 1135 378 1160 406C1189 438 1175 486 1132 506C1105 518 1075 520 1044 513L921 484C879 475 840 471 800 471C760 471 721 475 679 484L556 513C525 520 495 518 468 506C425 486 411 438 440 406Z" fill="url(#glass)" opacity="0.15"/>
+    <rect x="755" y="404" width="90" height="31" rx="15.5" fill="#111827" stroke="#334155" stroke-width="3"/>
+    <circle cx="800" cy="420" r="7" fill="#34D399"/>
+  </g>
+
+  <g transform="translate(112 662)">
+    <rect width="330" height="76" rx="16" fill="#111C2B" stroke="#294158"/>
+    <circle cx="42" cy="38" r="13" fill="#38BDF8"/>
+    <text x="72" y="47" fill="#E5F2FF" font-family="Arial, sans-serif" font-size="26" font-weight="700">手机摄像头识别</text>
+  </g>
+  <g transform="translate(472 662)">
+    <rect width="300" height="76" rx="16" fill="#111C2B" stroke="#294158"/>
+    <circle cx="42" cy="38" r="13" fill="#34D399"/>
+    <text x="72" y="47" fill="#E5F2FF" font-family="Arial, sans-serif" font-size="26" font-weight="700">G2 镜片显示</text>
+  </g>
+  <g transform="translate(802 662)">
+    <rect width="320" height="76" rx="16" fill="#111C2B" stroke="#294158"/>
+    <circle cx="42" cy="38" r="13" fill="#60A5FA"/>
+    <text x="72" y="47" fill="#E5F2FF" font-family="Arial, sans-serif" font-size="26" font-weight="700">MiniMax AI 问答</text>
+  </g>
+  <g transform="translate(1152 662)">
+    <rect width="336" height="76" rx="16" fill="#111C2B" stroke="#294158"/>
+    <circle cx="42" cy="38" r="13" fill="#2DD4BF"/>
+    <text x="72" y="47" fill="#E5F2FF" font-family="Arial, sans-serif" font-size="26" font-weight="700">语音朗读与记忆</text>
+  </g>
+
+  <text x="112" y="812" fill="#7E8EA3" font-family="Arial, sans-serif" font-size="22">Visual recognition · Voice assistant · Read-only TianLu memory lookup</text>
+</svg>

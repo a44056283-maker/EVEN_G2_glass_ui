@@ -1,0 +1,351 @@
+{
+  "mode": "daily",
+  "started_at": "2026-04-29 21:21:05",
+  "hours": 72,
+  "max_pairs": 1,
+  "guard": {
+    "ok": false,
+    "reasons": [
+      "I/O等待进程偏多: 12"
+    ],
+    "loadavg": [
+      4.19,
+      4.61,
+      4.99
+    ],
+    "df_root": "/dev/disk3s1s1       228   10       107     9%  425956 1132352280    0%   /",
+    "root_avail_gb": 107,
+    "running_backtests": [],
+    "u_state_count": 12
+  },
+  "recent_samples": {
+    "ok": true,
+    "error": null,
+    "sample_count": 300,
+    "sample_preview": [
+      {
+        "sample_id": "tianyan:TY-20260429211712-FDD742",
+        "source": "tianyan",
+        "pair": "SOL/USDT",
+        "action": null,
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": false,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260429211712-D8CA84",
+        "source": "tianyan",
+        "pair": "SOL/USDT",
+        "action": null,
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": false,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260429211705-448E73",
+        "source": "tianyan",
+        "pair": "SOL/USDT",
+        "action": null,
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": false,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260429211705-5399F7",
+        "source": "tianyan",
+        "pair": "SOL/USDT",
+        "action": null,
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": false,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260429211048-767C42",
+        "source": "tianyan",
+        "pair": "SOL/USDT",
+        "action": null,
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": false,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260429211048-C2298D",
+        "source": "tianyan",
+        "pair": "SOL/USDT",
+        "action": null,
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": false,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260429210354-9D8FFA",
+        "source": "tianyan",
+        "pair": "SOL/USDT",
+        "action": null,
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260429210354-630FA2",
+        "source": "tianyan",
+        "pair": "SOL/USDT",
+        "action": null,
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260429210352-665692",
+        "source": "tianyan",
+        "pair": "SOL/USDT",
+        "action": null,
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260429210352-CCEA54",
+        "source": "tianyan",
+        "pair": "SOL/USDT",
+        "action": null,
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260429205111-D0CC62",
+        "source": "tianyan",
+        "pair": "BNB/USDT",
+        "action": null,
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260429205111-BE9B12",
+        "source": "tianyan",
+        "pair": "SOL/USDT",
+        "action": null,
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260429205111-A108C9",
+        "source": "tianyan",
+        "pair": "SOL/USDT",
+        "action": null,
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260429204945-B1E003",
+        "source": "tianyan",
+        "pair": "SOL/USDT",
+        "action": null,
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260429204945-424A75",
+        "source": "tianyan",
+        "pair": "BNB/USDT",
+        "action": null,
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260429204945-8A861B",
+        "source": "tianyan",
+        "pair": "BNB/USDT",
+        "action": null,
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260429204945-3C44C4",
+        "source": "tianyan",
+        "pair": "SOL/USDT",
+        "action": null,
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260429204305-32C3FA",
+        "source": "tianyan",
+        "pair": "BNB/USDT",
+        "action": null,
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260429204305-92EA86",
+        "source": "tianyan",
+        "pair": "SOL/USDT",
+        "action": null,
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260429204304-39D2FE",
+        "source": "tianyan",
+        "pair": "SOL/USDT",
+        "action": null,
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      }
+    ],
+    "pair_counts": {
+      "SOL/USDT": 35,
+      "BNB/USDT": 206,
+      "BTC/USDT": 27,
+      "ETH/USDT": 32
+    },
+    "data_completeness": {
+      "m1": {
+        "filled": 297,
+        "total": 300,
+        "pct": 99.0
+      },
+      "m2": {
+        "filled": 297,
+        "total": 300,
+        "pct": 99.0
+      },
+      "m3": {
+        "filled": 297,
+        "total": 300,
+        "pct": 99.0
+      },
+      "m4": {
+        "filled": 294,
+        "total": 300,
+        "pct": 98.0
+      },
+      "l5": {
+        "filled": 300,
+        "total": 300,
+        "pct": 100.0
+      }
+    }
+  },
+  "ai_flow": {
+    "ok": true,
+    "error": null,
+    "pairs": {
+      "bnb": {
+        "m1": true,
+        "m2": true,
+        "m3": true,
+        "m4": true,
+        "l5": true
+      },
+      "btc": {
+        "m1": true,
+        "m2": true,
+        "m3": true,
+        "m4": true,
+        "l5": true
+      },
+      "doge": {
+        "m1": true,
+        "m2": true,
+        "m3": true,
+        "m4": true,
+        "l5": true
+      },
+      "eth": {
+        "m1": true,
+        "m2": true,
+        "m3": true,
+        "m4": true,
+        "l5": true
+      },
+      "sol": {
+        "m1": true,
+        "m2": true,
+        "m3": true,
+        "m4": true,
+        "l5": true
+      }
+    }
+  },
+  "selected_pairs": [
+    "BNB/USDT"
+  ],
+  "backtests": [],
+  "recommendations": [
+    "今日样本质量达标；可进入多币种参数候选对照，但仍需周汇总确认。",
+    "所有建议只进入候选池，不自动改实盘runtime参数。"
+  ],
+  "finished_at": "2026-04-29 21:21:08"
+}

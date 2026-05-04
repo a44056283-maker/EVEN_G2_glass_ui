@@ -1,0 +1,11 @@
+{
+  "funding_rate": null,
+  "long_short_ratio": null,
+  "fear_greed": {
+    "value": 26,
+    "classification": "Fear",
+    "timestamp": "2026-04-18T09:41:27.029298+00:00"
+  },
+  "alerts": [],
+  "fetch_time": "2026-04-18T09:41:06.142180+00:00"
+}

@@ -1,0 +1,222 @@
+{
+  "started_at": "2026-04-28 20:00:27",
+  "status": "ok_with_issues",
+  "self_heal": [
+    "9099 控制台健康",
+    "已尝试拉起缺失执行代理: [8081, 8082, 8083, 8084, 9090, 9091, 9092, 9093, 9094, 9095, 9096, 9097]"
+  ],
+  "issues": [
+    {
+      "level": "medium",
+      "where": "replay_samples",
+      "message": "HTTP Error 500: INTERNAL SERVER ERROR"
+    },
+    {
+      "level": "medium",
+      "where": "bt2_run",
+      "message": "Command '['/Library/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python', '/Users/luxiangnan/freqtrade_console/bt_tools/backtest_core/run_backtest.py', '--pair', 'BTC/USDT', '--exchange', 'gate', '--output', '/Users/luxiangnan/freqtrade_console/bt_tools/backtest_core/reports/bt_dc6b8234.json', '--days', '30']' timed out after 90 seconds"
+    }
+  ],
+  "rounds": [
+    {
+      "round": 1,
+      "started_at": "2026-04-28 20:00:40",
+      "endpoints": {
+        "ai_data_flow": {
+          "ok": true,
+          "latency_s": 0.004,
+          "error": null,
+          "summary": {
+            "ok": true,
+            "pairs": 5,
+            "blank_count": 0,
+            "has_l5_pairs": 5
+          }
+        },
+        "l5_market_intel": {
+          "ok": true,
+          "latency_s": 0.003,
+          "error": null,
+          "validation_levels": {
+            "triple": 10,
+            "quiet": 5
+          }
+        },
+        "l5_daily_attribution": {
+          "ok": true,
+          "latency_s": 0.414,
+          "error": null
+        },
+        "l5_evolution": {
+          "ok": true,
+          "latency_s": 0.035,
+          "error": null
+        },
+        "agent_status": {
+          "ok": true,
+          "latency_s": 0.001,
+          "error": null,
+          "agent_count": 12
+        },
+        "backtest_overview": {
+          "ok": true,
+          "latency_s": 0.043,
+          "error": null
+        }
+      },
+      "issues": []
+    },
+    {
+      "round": 2,
+      "started_at": "2026-04-28 20:01:01",
+      "endpoints": {
+        "ai_data_flow": {
+          "ok": true,
+          "latency_s": 0.008,
+          "error": null,
+          "summary": {
+            "ok": true,
+            "pairs": 5,
+            "blank_count": 0,
+            "has_l5_pairs": 5
+          }
+        },
+        "l5_market_intel": {
+          "ok": true,
+          "latency_s": 0.003,
+          "error": null,
+          "validation_levels": {
+            "triple": 10,
+            "quiet": 5
+          }
+        },
+        "l5_daily_attribution": {
+          "ok": true,
+          "latency_s": 0.367,
+          "error": null
+        },
+        "l5_evolution": {
+          "ok": true,
+          "latency_s": 0.014,
+          "error": null
+        },
+        "agent_status": {
+          "ok": true,
+          "latency_s": 0.009,
+          "error": null,
+          "agent_count": 12
+        },
+        "backtest_overview": {
+          "ok": true,
+          "latency_s": 0.063,
+          "error": null
+        }
+      },
+      "issues": []
+    },
+    {
+      "round": 3,
+      "started_at": "2026-04-28 20:01:21",
+      "endpoints": {
+        "ai_data_flow": {
+          "ok": true,
+          "latency_s": 0.003,
+          "error": null,
+          "summary": {
+            "ok": true,
+            "pairs": 5,
+            "blank_count": 0,
+            "has_l5_pairs": 5
+          }
+        },
+        "l5_market_intel": {
+          "ok": true,
+          "latency_s": 0.005,
+          "error": null,
+          "validation_levels": {
+            "triple": 10,
+            "quiet": 5
+          }
+        },
+        "l5_daily_attribution": {
+          "ok": true,
+          "latency_s": 0.281,
+          "error": null
+        },
+        "l5_evolution": {
+          "ok": true,
+          "latency_s": 0.003,
+          "error": null
+        },
+        "agent_status": {
+          "ok": true,
+          "latency_s": 0.002,
+          "error": null,
+          "agent_count": 12
+        },
+        "backtest_overview": {
+          "ok": true,
+          "latency_s": 0.025,
+          "error": null
+        }
+      },
+      "issues": []
+    }
+  ],
+  "agents": {
+    "registered_count": 12,
+    "registered_ports": [
+      8081,
+      8082,
+      8083,
+      8084,
+      9090,
+      9091,
+      9092,
+      9093,
+      9094,
+      9095,
+      9096,
+      9097
+    ],
+    "unhealthy_command_ports": [],
+    "autopilot_enabled": true
+  },
+  "refresh": {
+    "replay_samples": {
+      "ok": false,
+      "latency_s": 0.25,
+      "error": "HTTP Error 500: INTERNAL SERVER ERROR"
+    },
+    "param_registry": {
+      "ok": true,
+      "latency_s": 0.012,
+      "error": null,
+      "count": 104,
+      "refreshed": true
+    }
+  },
+  "backtest": {
+    "start_ok": true,
+    "start_latency_s": 0.011,
+    "error": null,
+    "payload": {
+      "exchange": "gateio",
+      "pair": "BTC/USDT",
+      "days": 30,
+      "timeframe": "15m"
+    },
+    "job_id": "dc6b8234",
+    "final_status": {
+      "detail": "❌ Command '['/Library/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python', '/Users/luxiangnan/freqtrade_console/bt_tools/backtest_core/run_backtest.py', '--pair', 'BTC/USDT', '--exchange', 'gate', '--output', '/Users/luxiangnan/freqtrade_console/bt_tools/backtest_core/reports/bt_dc6b8234.json', '--days', '30']' timed out after 90 seconds",
+      "done": false,
+      "elapsed_s": 92.0,
+      "error": "Command '['/Library/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python', '/Users/luxiangnan/freqtrade_console/bt_tools/backtest_core/run_backtest.py', '--pair', 'BTC/USDT', '--exchange', 'gate', '--output', '/Users/luxiangnan/freqtrade_console/bt_tools/backtest_core/reports/bt_dc6b8234.json', '--days', '30']' timed out after 90 seconds",
+      "job_id": "dc6b8234",
+      "progress": 25,
+      "results": null,
+      "status": "error"
+    }
+  },
+  "finished_at": "2026-04-28 20:02:54"
+}

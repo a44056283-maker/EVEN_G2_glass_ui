@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>策略参数 · 天福V6.5</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #e6edf3; min-height: 100vh; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 20px; }
+.hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding: 12px 16px; background: #161b22; border-radius: 10px; border: 1px solid #30363d; }
+.hdr-title { font-size: 16px; font-weight: 700; }
+.hdr-sub { font-size: 11px; color: #8b949e; }
+.hdr-right { display: flex; gap: 10px; align-items: center; }
+.btn { font-size: 12px; padding: 6px 14px; border-radius: 6px; border: 1px solid #30363d; background: #21262d; color: #e6edf3; cursor: pointer; }
+.btn:hover { background: #30363d; }
+.btn-primary { background: #238636; border-color: #238636; }
+.btn-primary:hover { background: #2ea043; }
+.badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; }
+.badge-ok { background: #2ea04322; color: #3fb950; border: 1px solid #3fb95044; }
+.badge-warn { background: #d2992222; color: #d29922; border: 1px solid #d2992244; }
+.loading { text-align: center; padding: 60px; color: #8b949e; font-size: 14px; }
+.error { background: #ff525022; border: 1px solid #ff525044; border-radius: 8px; padding: 16px; color: #ff5250; font-size: 13px; }
+
+/* section */
+.section { margin-bottom: 20px; }
+.section-hdr { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #161b22; border-radius: 8px 8px 0 0; border: 1px solid #30363d; cursor: pointer; user-select: none; }
+.section-hdr:hover { background: #1c2128; }
+.section-hdr .title { font-size: 14px; font-weight: 700; }
+.section-hdr .arrow { font-size: 10px; color: #8b949e; transition: transform .2s; }
+.section-hdr.open .arrow { transform: rotate(90deg); }
+.section-body { border: 1px solid #30363d; border-top: none; border-radius: 0 0 8px 8px; overflow: hidden; }
+
+/* param table */
+table { width: 100%; border-collapse: collapse; }
+th { font-size: 10px; font-weight: 700; color: #8b949e; text-align: left; padding: 8px 12px; background: #0d1117; border-bottom: 1px solid #30363d; letter-spacing: .05em; }
+td { padding: 9px 12px; border-bottom: 1px solid #21262d; font-size: 12px; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #161b22; }
+.param-label { color: #e6edf3; font-weight: 600; }
+.param-var { font-size: 10px; color: #6e7681; font-family: monospace; }
+.param-type { color: #8b949e; }
+.param-type.int { color: #79c0ff; }
+.param-type.float { color: #a5d6ff; }
+.param-val { font-weight: 700; color: #3fb950; font-family: monospace; }
+.param-val.editable { color: #e6edf3; cursor: pointer; }
+.param-val.editable:hover { color: #58a6ff; }
+.param-val.negative { color: #ff7b72; }
+input.param-input { background: #0d1117; border: 1px solid #388bfd; border-radius: 4px; color: #e6edf3; padding: 3px 8px; font-size: 12px; font-family: monospace; width: 100px; outline: none; }
+input.param-input.error { border-color: #ff5250; }
+.edit-row td { background: #161b22; }
+.edit-actions { display: flex; gap: 6px; }
+.btn-save { font-size: 11px; padding: 4px 10px; border-radius: 4px; background: #238636; border: none; color: #fff; cursor: pointer; }
+.btn-cancel { font-size: 11px; padding: 4px 10px; border-radius: 4px; background: #21262d; border: 1px solid #30363d; color: #8b949e; cursor: pointer; }
+
+.minmax { font-size: 10px; color: #8b949e; font-family: monospace; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr">
+    <div>
+      <div class="hdr-title">📊 策略参数 · 天福V6.5</div>
+      <div class="hdr-sub" id="botInfo">加载中…</div>
+    </div>
+    <div class="hdr-right">
+      <span class="badge badge-ok" id="statusBadge">✅ 在线</span>
+      <button class="btn btn-primary" onclick="refreshAll()">🔄 刷新</button>
+      <button class="btn" onclick="saveAll()">💾 全部保存</button>
+      <a href="/" class="btn">← 返回</a>
+    </div>
+  </div>
+
+  <div id="loading" class="loading">⏳ 正在加载策略参数…</div>
+  <div id="error" class="error" style="display:none"></div>
+  <div id="content" style="display:none"></div>
+</div>
+
+<script>
+const API = '';
+let config = null;
+let editingKey = null;
+const changed = {};
+
+function fetchConfig() {
+  return fetch(`${API}/api/v1/autopilot/config`)
+    .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+    .catch(e => Promise.reject(new Error('无法连接Bot (9090): ' + e.message)));
+}
+
+function renderValue(key, val, type) {
+  if (type === 'float') return Number(val).toFixed(val % 1 === 0 ? 0 : 2);
+  return String(val);
+}
+
+function refreshAll() {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('error').style.display = 'none';
+  document.getElementById('content').style.display = 'none';
+  fetchConfig().then(data => {
+    config = data;
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+    render(data);
+  }).catch(e => {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error').style.display = 'block';
+    document.getElementById('error').textContent = e.message;
+  });
+}
+
+function sections(data) {
+  const adj = data.adjustable || {};
+  const groups = {
+    '🟢 L1 入场基础': { keys: [] },
+    '🟢 L2 资金流': { keys: [] },
+    '🔵 L3 触顶回落': { keys: [] },
+    '🟡 L4 支撑压力': { keys: [] },
+    '🟣 L5 杠杆仓位': { keys: [] },
+    '🔴 L6 订单簿': { keys: [] },
+    '🛡️ L7 多空持仓': { keys: [] },
+  };
+  for (const [k, v] of Object.entries(adj)) {
+    const label = v.label || k;
+    if (label.includes('[L1') || label.includes('入场') || label.includes('基线')) groups['🟢 L1 入场基础'].keys.push(k);
+    else if (label.includes('[L2') || label.includes('净流入') || label.includes('巨量') || label.includes('量比')) groups['🟢 L2 资金流'].keys.push(k);
+    else if (label.includes('[L3') || label.includes('触顶') || label.includes('触底') || label.includes('回落')) groups['🔵 L3 触顶回落'].keys.push(k);
+    else if (label.includes('[L4') || label.includes('S/R') || label.includes('止损') || label.includes('回撤')) groups['🟡 L4 支撑压力'].keys.push(k);
+    else if (label.includes('[L5') || label.includes('杠杆') || label.includes('仓位') || label.includes('下注')) groups['🟣 L5 杠杆仓位'].keys.push(k);
+    else if (label.includes('[L6') || label.includes('OBI') || label.includes('订单簿')) groups['🔴 L6 订单簿'].keys.push(k);
+    else if (label.includes('[L7') || label.includes('多空') || label.includes('持仓')) groups['🛡️ L7 多空持仓'].keys.push(k);
+    else groups['🟢 L1 入场基础'].keys.push(k);
+  }
+  return groups;
+}
+
+function render(data) {
+  const adj = data.adjustable || {};
+  const secs = sections(data);
+
+  // bot info
+  const bot = data.bot_name || data.version || '天福V6.5';
+  const keys = Object.keys(adj);
+  const chg = Object.keys(changed).length;
+  document.getElementById('botInfo').textContent = `${keys.length} 个可调参数` + (chg ? ` · ${chg} 个待保存` : '');
+
+  // status
+  document.getElementById('statusBadge').textContent = '✅ 在线';
+
+  let html = '';
+  for (const [secName, sec] of Object.entries(secs)) {
+    if (!sec.keys.length) continue;
+    html += `<div class="section">
+      <div class="section-hdr open" onclick="toggleSec(this)">
+        <span class="arrow">▶</span>
+        <span class="title">${secName}</span>
+        <span style="font-size:11px;color:#8b949e;margin-left:auto">${sec.keys.length} 个参数</span>
+      </div>
+      <div class="section-body">
+        <table>
+          <thead><tr><th>参数</th><th>当前值</th><th>范围</th><th>类型</th><th>变量名</th></tr></thead>
+          <tbody>`;
+    for (const k of sec.keys) {
+      const v = adj[k];
+      if (!v) continue;
+      const type = v.type || 'string';
+      const cur = v.value;
+      const disp = renderValue(k, cur, type);
+      const isNeg = type === 'float' && cur < 0;
+      const isChanged = changed[k] !== undefined;
+      const min = v.min !== undefined ? v.min : '—';
+      const max = v.max !== undefined ? v.max : '—';
+      const mm = (min !== '—' || max !== '—') ? `${min} ~ ${max}` : '—';
+      html += `<tr id="row-${k}" data-key="${k}">
+        <td><div class="param-label">${v.label || k}</div><div class="param-var">${v.var || k}</div></td>
+        <td><span class="param-val ${isNeg ? 'negative' : ''}" style="${isChanged ? 'color:#d29922' : ''}" onclick="startEdit('${k}')">${isChanged ? renderValue(k, changed[k], type) : disp}${isChanged ? ' ↩' : ''}</span></td>
+        <td><span class="minmax">${mm}</span></td>
+        <td><span class="param-type ${type}">${type}</span></td>
+        <td><code style="font-size:11px;color:#8b949e">${v.var || '—'}</code></td>
+      </tr>`;
+    }
+    html += '</tbody></table></div></div>';
+  }
+
+  document.getElementById('content').innerHTML = html;
+}
+
+function toggleSec(el) {
+  el.classList.toggle('open');
+  const body = el.nextElementSibling;
+  body.style.display = el.classList.contains('open') ? '' : 'none';
+}
+
+function startEdit(key) {
+  const adj = config.adjustable || {};
+  const v = adj[key];
+  if (!v) return;
+  const type = v.type || 'string';
+  const cur = changed[key] !== undefined ? changed[key] : v.value;
+  const row = document.getElementById('row-' + key);
+  const valTd = row.children[1];
+  valTd.innerHTML = `<input class="param-input" type="${type === 'int' ? 'number' : 'number'}" step="${type === 'float' ? '0.01' : '1'}" value="${cur}" id="input-${key}" onkeydown="if(event.key==='Enter')applyEdit('${key}')"> <div class="edit-actions"><button class="btn-save" onclick="applyEdit('${key}')">✓</button><button class="btn-cancel" onclick="cancelEdit('${key}')">✗</button></div>`;
+  setTimeout(() => document.getElementById('input-' + key)?.focus(), 10);
+}
+
+function applyEdit(key) {
+  const adj = config.adjustable || {};
+  const v = adj[key];
+  const type = v.type || 'string';
+  const input = document.getElementById('input-' + key);
+  const raw = input.value.trim();
+  let val;
+  if (type === 'int') { val = parseInt(raw); if (isNaN(val)) { input.classList.add('error'); return; } }
+  else { val = parseFloat(raw); if (isNaN(val)) { input.classList.add('error'); return; } }
+  if (v.min !== undefined && val < v.min) { input.classList.add('error'); return; }
+  if (v.max !== undefined && val > v.max) { input.classList.add('error'); return; }
+  changed[key] = val;
+  render(config);
+}
+
+function cancelEdit(key) {
+  if (changed[key] === undefined) delete changed[key];
+  render(config);
+}
+
+function saveAll() {
+  if (!Object.keys(changed).length) { alert('没有参数被修改'); return; }
+  if (!confirm(`确定要保存 ${Object.keys(changed).length} 个参数修改吗？`)) return;
+  const payload = { adjustable: {} };
+  const adj = config.adjustable || {};
+  for (const [k, v] of Object.entries(changed)) {
+    payload.adjustable[k] = { value: v, var: adj[k]?.var };
+  }
+  fetch(`${API}/api/v1/autopilot/config`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(r => {
+    if (r.ok) { alert('✅ 参数已保存'); Object.keys(changed).forEach(k => delete changed[k]); refreshAll(); }
+    else r.json().then(d => alert('❌ 保存失败: ' + (d.error || r.status))).catch(() => alert('❌ 保存失败: HTTP ' + r.status));
+  }).catch(e => alert('❌ 保存失败: ' + e.message));
+}
+
+refreshAll();
+</script>
+</body>
+</html>

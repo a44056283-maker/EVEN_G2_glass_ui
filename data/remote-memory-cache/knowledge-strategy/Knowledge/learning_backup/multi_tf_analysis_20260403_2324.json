@@ -1,0 +1,120 @@
+{
+  "symbol": "BTCUSDT",
+  "timestamp": "2026-04-03T23:24:20.596049",
+  "timeframes": {
+    "15m": {
+      "klines_count": 200,
+      "fractals_count": 59,
+      "strokes_count": 34,
+      "centers_count": 0,
+      "last_stroke": {
+        "type": "up",
+        "start_index": 135,
+        "end_index": 138,
+        "start_price": 66508.1,
+        "end_price": 67028.37,
+        "amplitude": 520.2699999999895,
+        "high": 67028.37,
+        "low": 66508.1
+      },
+      "last_center": null,
+      "wyckoff_phase": "range",
+      "spring": null,
+      "sos": false,
+      "volume_profile": {
+        "total_volume": 2359.264,
+        "up_volume": 1114.24451,
+        "down_volume": 1245.01949,
+        "up_ratio": 0.472284793054105,
+        "avg_volume": 117.9632,
+        "avg_quote": 7885998.299976701,
+        "taker_buy_ratio": 0.5772630659392082
+      },
+      "current_price": 66900.72,
+      "price_change_24h": -0.0022121843526758844
+    },
+    "1h": {
+      "klines_count": 200,
+      "fractals_count": 65,
+      "strokes_count": 40,
+      "centers_count": 2,
+      "last_stroke": {
+        "type": "down",
+        "start_index": 136,
+        "end_index": 138,
+        "start_price": 67288.0,
+        "end_price": 66674.72,
+        "amplitude": 613.2799999999988,
+        "high": 67288.0,
+        "low": 66674.72
+      },
+      "last_center": {
+        "type": "down",
+        "start_stroke": 29,
+        "end_stroke": 31,
+        "high": 69171.77,
+        "low": 66217.07,
+        "range": 2954.699999999997,
+        "direction": "down"
+      },
+      "wyckoff_phase": "range",
+      "spring": null,
+      "sos": false,
+      "volume_profile": {
+        "total_volume": 9914.11671,
+        "up_volume": 3945.53752,
+        "down_volume": 5968.57919,
+        "up_ratio": 0.39797166357949804,
+        "avg_volume": 495.70583550000003,
+        "avg_quote": 33113242.318571128,
+        "taker_buy_ratio": 0.48145405885583936
+      },
+      "current_price": 66900.72,
+      "price_change_24h": -0.2908227558038308
+    },
+    "1d": {
+      "klines_count": 200,
+      "fractals_count": 50,
+      "strokes_count": 35,
+      "centers_count": 3,
+      "last_stroke": {
+        "type": "up",
+        "start_index": 137,
+        "end_index": 140,
+        "start_price": 65000.0,
+        "end_price": 69310.0,
+        "amplitude": 4310.0,
+        "high": 69310.0,
+        "low": 65000.0
+      },
+      "last_center": {
+        "type": "down",
+        "start_stroke": 12,
+        "end_stroke": 14,
+        "high": 94789.08,
+        "low": 86420.0,
+        "range": 8369.080000000002,
+        "direction": "down"
+      },
+      "wyckoff_phase": "range",
+      "spring": null,
+      "sos": false,
+      "volume_profile": {
+        "total_volume": 385028.18073,
+        "up_volume": 147081.3929,
+        "down_volume": 237946.78783,
+        "up_ratio": 0.3820016306887948,
+        "avg_volume": 19251.4090365,
+        "avg_quote": 1343169303.010614,
+        "taker_buy_ratio": 0.4964980490715158
+      },
+      "current_price": 66900.72,
+      "price_change_24h": -4.6887773026672885
+    }
+  },
+  "match": {
+    "matched": false,
+    "similarity": 0,
+    "prediction": "知识库为空，需人工判断"
+  }
+}

@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔭 钦天监 · 情报与决策中心</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0e1a;
+  --panel: #0f1629;
+  --panel2: #141e35;
+  --panel3: #1a2540;
+  --border: #1e2d4a;
+  --text: #c8d6f0;
+  --muted: #5a7090;
+  --gold: #ffd700;
+  --red: #ff5252;
+  --orange: #ff9800;
+  --yellow: #f5c842;
+  --green: #3fb950;
+  --blue: #58a6ff;
+  --purple: #a07aff;
+  --cyan: #00e5ff;
+}
+
+body {
+  font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+.hdr {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #0a0e1a 0%, #0f1a30 50%, #0a1a2a 100%);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+}
+.hdr-title {
+  display: flex; align-items: center; gap: 12px;
+}
+.hdr-title h1 {
+  font-size: 18px; font-weight: 700;
+  background: linear-gradient(135deg, var(--gold), #ff9500);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 2px;
+}
+.hdr-title .subtitle { font-size: 11px; color: var(--muted); }
+.hdr-right { display: flex; align-items: center; gap: 12px; }
+.hdr-right .status { font-size: 11px; color: var(--muted); }
+.hdr-right .countdown { font-size: 11px; color: var(--muted); font-family: monospace; }
+.btn { font-size: 12px; padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border); background: var(--panel2); color: var(--text); cursor: pointer; }
+.btn:hover { background: var(--panel3); border-color: var(--blue); }
+.btn-primary { background: var(--blue); border-color: var(--blue); color: #000; font-weight: 700; }
+.btn-primary:hover { background: #79b8ff; }
+.btn-danger { border-color: var(--red); color: var(--red); }
+.btn-danger:hover { background: #ff525222; }
+.btn-ok { border-color: var(--green); color: var(--green); }
+.btn-ok:hover { background: #3fb95022; }
+.btn-gold { border-color: var(--gold); color: var(--gold); }
+.btn-gold:hover { background: #ffd70022; }
+
+/* ── Tabs ── */
+.tabs { display: flex; gap: 0; padding: 0 24px; background: var(--panel); border-bottom: 1px solid var(--border); }
+.tab { padding: 10px 20px; cursor: pointer; font-size: 13px; color: var(--muted); border-bottom: 2px solid transparent; transition: all .2s; }
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--gold); border-bottom-color: var(--gold); font-weight: 700; }
+
+/* ── Main Layout ── */
+.main { display: flex; gap: 0; min-height: calc(100vh - 90px); }
+
+/* ── Left Panel ── */
+.left-panel { width: 320px; flex-shrink: 0; padding: 16px; border-right: 1px solid var(--border); overflow-y: auto; }
+.right-panel { flex: 1; padding: 16px 24px; overflow-y: auto; }
+
+/* ── Stat Cards Grid ── */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.stat-card {
+  background: var(--panel2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 12px; position: relative; overflow: hidden;
+}
+.stat-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.stat-card.gold::before { background: var(--gold); }
+.stat-card.red::before { background: var(--red); }
+.stat-card.green::before { background: var(--green); }
+.stat-card.blue::before { background: var(--blue); }
+.stat-card.orange::before { background: var(--orange); }
+.stat-card.purple::before { background: var(--purple); }
+.slabel { font-size: 10px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .05em; }
+.svalue { font-size: 18px; font-weight: 700; }
+.ssub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+/* ── Market Data Block ── */
+.market-block { background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
+.market-hdr { padding: 8px 12px; background: var(--panel3); font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .05em; border-bottom: 1px solid var(--border); }
+.market-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; border-bottom: 1px solid var(--border); font-size: 12px; }
+.market-row:last-child { border-bottom: none; }
+.market-row .label { color: var(--muted); }
+.market-row .value { font-weight: 600; font-family: monospace; }
+.market-row .value.up { color: var(--green); }
+.market-row .value.down { color: var(--red); }
+.market-row .value.warn { color: var(--yellow); }
+.market-row .value.neutral { color: var(--text); }
+
+/* ── Signal Badges ── */
+.layer-summary { background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 12px; padding: 12px; }
+.layer-title { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 10px; letter-spacing: .05em; }
+.layer-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.layer-badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; border: 1px solid; font-weight: 700; }
+.layer-badge.critical { background: #ff525222; border-color: var(--red); color: var(--red); }
+.layer-badge.high { background: #ff980022; border-color: var(--orange); color: var(--orange); }
+.layer-badge.medium { background: #f5c84222; border-color: var(--yellow); color: var(--yellow); }
+.layer-badge.low { background: #3fb95022; border-color: var(--green); color: var(--green); }
+.layer-badge.p0 { background: #ff525222; border-color: var(--red); color: var(--red); }
+.layer-badge.p1 { background: #ff980022; border-color: var(--orange); color: var(--orange); }
+.layer-badge.p2 { background: #f5c84222; border-color: var(--yellow); color: var(--yellow); }
+.layer-badge.p3 { background: #58a6ff22; border-color: var(--blue); color: var(--blue); }
+
+/* ── Right Panel Sections ── */
+.section { margin-bottom: 24px; }
+.section-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.section-title { font-size: 14px; font-weight: 700; color: var(--text); }
+.section-count { font-size: 11px; padding: 2px 8px; border-radius: 20px; background: var(--panel3); color: var(--muted); }
+
+/* ── Rule Cards ── */
+.rule-list { display: flex; flex-direction: column; gap: 8px; }
+.rule-card {
+  background: var(--panel2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px 16px; display: flex; gap: 12px; align-items: flex-start;
+  transition: border-color .2s;
+}
+.rule-card:hover { border-color: var(--blue); }
+.rule-card.triggered { border-left: 3px solid var(--red); }
+.rule-card.clear { border-left: 3px solid var(--green); opacity: .7; }
+.rule-icon { font-size: 20px; flex-shrink: 0; width: 28px; text-align: center; }
+.rule-info { flex: 1; min-width: 0; }
+.rule-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.rule-meta { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.rule-reason { font-size: 12px; color: var(--text); line-height: 1.5; }
+.rule-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+.rule-action { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 4px; white-space: nowrap; }
+.rule-action.freeze { background: #58a6ff22; border: 1px solid var(--blue); color: var(--blue); }
+.rule-action.block_entry { background: #ff980022; border: 1px solid var(--orange); color: var(--orange); }
+.rule-action.force_close { background: #ff525222; border: 1px solid var(--red); color: var(--red); }
+.rule-action. alert { background: #f5c84222; border: 1px solid var(--yellow); color: var(--yellow); }
+.rule-action.signal_boost { background: #3fb95022; border: 1px solid var(--green); color: var(--green); }
+.rule-action.watch { background: #a07aff22; border: 1px solid var(--purple); color: var(--purple); }
+.rule-action.direction_bias { background: #00e5ff22; border: 1px solid var(--cyan); color: var(--cyan); }
+.rule-action.pause_trading { background: #ff525222; border: 1px solid var(--red); color: var(--red); }
+
+/* ── Proposal Cards ── */
+.proposal-list { display: flex; flex-direction: column; gap: 10px; }
+.proposal-card {
+  background: var(--panel2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px 16px;
+}
+.proposal-card.pending { border-left: 3px solid var(--yellow); }
+.proposal-card.approved { border-left: 3px solid var(--green); }
+.proposal-card.rejected { border-left: 3px solid var(--red); opacity: .6; }
+.proposal-card.expired { border-left: 3px solid var(--muted); opacity: .5; }
+.prop-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.prop-id { font-size: 10px; color: var(--muted); font-family: monospace; }
+.prop-title { font-size: 14px; font-weight: 700; flex: 1; }
+.prop-status { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+.prop-status.pending { background: #f5c84222; color: var(--yellow); }
+.prop-status.approved { background: #3fb95022; color: var(--green); }
+.prop-status.rejected { background: #ff525222; color: var(--red); }
+.prop-status.expired { background: var(--panel3); color: var(--muted); }
+.prop-body { font-size: 12px; color: var(--muted); margin-bottom: 10px; line-height: 1.6; }
+.prop-body .current { color: var(--text); font-weight: 600; }
+.prop-body .threshold { color: var(--muted); }
+.prop-body .reason { color: var(--text); margin-top: 4px; }
+.prop-footer { display: flex; justify-content: space-between; align-items: center; }
+.prop-time { font-size: 10px; color: var(--muted); }
+.prop-actions { display: flex; gap: 6px; }
+
+/* ── No Data ── */
+.empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+.empty-icon { font-size: 32px; margin-bottom: 8px; }
+
+/* ── Footer ── */
+.footer { text-align: center; padding: 12px; font-size: 10px; color: var(--muted); border-top: 1px solid var(--border); }
+
+/* ── Loading ── */
+.loading { display: flex; align-items: center; justify-content: center; padding: 60px; color: var(--muted); }
+.spinner { width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin .8s linear infinite; margin-right: 10px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Approval Result Page ── */
+.result-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+.result-card { background: var(--panel2); border: 1px solid var(--border); border-radius: 16px; padding: 48px; text-align: center; max-width: 480px; width: 90%; }
+.result-icon { font-size: 64px; margin-bottom: 16px; }
+.result-title { font-size: 24px; font-weight: 700; margin-bottom: 12px; }
+.result-body { font-size: 14px; color: var(--muted); margin-bottom: 24px; line-height: 1.6; }
+.result-id { font-size: 12px; font-family: monospace; color: var(--muted); background: var(--panel3); padding: 4px 12px; border-radius: 4px; display: inline-block; margin-bottom: 24px; }
+.result-actions { display: flex; gap: 10px; justify-content: center; }
+
+/* ── Alert Banner ── */
+.alert-banner { background: #ff525215; border: 1px solid var(--red); border-radius: 8px; padding: 10px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.alert-banner-icon { font-size: 20px; }
+.alert-banner-text { flex: 1; color: var(--text); }
+.alert-banner-count { font-size: 16px; font-weight: 700; color: var(--red); }
+
+/* ── Bias Indicator ── */
+.bias-bar { background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; }
+.bias-bar-hdr { font-size: 10px; color: var(--muted); margin-bottom: 6px; letter-spacing: .05em; }
+.bias-bar-track { height: 6px; background: var(--panel3); border-radius: 3px; position: relative; }
+.bias-bar-fill { height: 100%; border-radius: 3px; transition: width .5s; }
+.bias-bar-fill.bull { background: var(--green); }
+.bias-bar-fill.bear { background: var(--red); }
+.bias-bar-fill.neutral { background: var(--muted); }
+.bias-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 4px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const API = '';
+const REFRESH_INTERVAL = 30000;
+let state = {
+  tab: 'market',   // market / signals / proposals
+  loading: true,
+  marketData: null,
+  triggeredRules: [],
+  proposals: [],
+  lastRefresh: '',
+  countdown: 30,
+  error: null,
+};
+
+function $(sel) { return document.querySelector(sel); }
+function $$(sel) { return document.querySelectorAll(sel); }
+
+// ── API ──
+async function api(path) {
+  const r = await fetch(API + path, { cache: 'no-store' });
+  if (!r.ok) throw new Error(String(r.status));
+  return r.json();
+}
+async function post(path, body) {
+  const r = await fetch(API + path, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body),
+  });
+  return r.ok ? r.json() : { error: String(r.status) };
+}
+
+// ── Formatting ──
+function fmt(n, decimals=2) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return Number(n).toFixed(decimals);
+}
+function fmtInt(n) {
+  if (!n && n !== 0) return '—';
+  return Number(n).toLocaleString('zh-CN');
+}
+function fmtPrice(n) {
+  if (!n) return '—';
+  return '$' + Number(n).toLocaleString('zh-CN', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+}
+function timeAgo(ts) {
+  if (!ts) return '';
+  const d = new Date(ts.includes('T') ? ts : ts.replace(' ', 'T') + 'Z');
+  const diff = Date.now() - d.getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return '刚刚';
+  if (mins < 60) return mins + '分钟前';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + '小时前';
+  return Math.floor(hrs / 24) + '天前';
+}
+
+// ── Rule Urgency Color ──
+function urgencyColor(u) {
+  if (u >= 9) return 'critical';
+  if (u >= 7) return 'high';
+  if (u >= 5) return 'medium';
+  return 'low';
+}
+function severityIcon(s) {
+  if (s === 'critical') return '🚨';
+  if (s === 'high') return '⚠️';
+  if (s === 'medium') return '🟡';
+  return '🟢';
+}
+
+// ── Status Badge ──
+function statusBadge(status) {
+  const map = {pending: '待审批', approved: '已批准', rejected: '已否决', expired: '已过期', executed: '已执行'};
+  return `<span class="prop-status ${status}">${map[status] || status}</span>`;
+}
+
+// ── Action Badge ──
+function actionBadge(action) {
+  const map = {
+    freeze: '❄️ 冻结',
+    block_entry: '🚫 阻止',
+    force_close: '🔴 强平',
+    alert: '⚠️ 预警',
+    signal_boost: '📈 信号增强',
+    watch_breakout: '👀 关注突破',
+    confirm_breakout: '✅ 确认入场',
+    direction_bias: '↗️ 方向信号',
+    block_short: '🚫 禁止做空',
+    block_long: '🚫 禁止做多',
+    reverse_signal: '🔄 逆向信号',
+    pause_trading: '⏸️ 暂停',
+    force_stop_loss: '🔴 止损',
+    reduce_position: '📉 减仓',
+    none: '—',
+  };
+  return `<span class="rule-action ${action}">${map[action] || action}</span>`;
+}
+
+// ── Main Render ──
+function render() {
+  const app = $('#app');
+  const md = state.marketData || {};
+  const btc = md.symbols?.BTC || {};
+  const sentiment = md.sentiment || {};
+  const positions = md.positions || [];
+  const rules = state.triggeredRules || [];
+  const proposals = state.proposals || [];
+  const pending = proposals.filter(p => p.status === 'pending');
+  const now = new Date().toLocaleTimeString('zh-CN');
+
+  const layerOrder = ['risk', 'market', 'flow', 'tech', 'sentiment', 'event'];
+  const layerNames = {risk:'P0风控', market:'P1市场', flow:'P1资金', tech:'P2技术', sentiment:'P2情绪', event:'P3事件'};
+  const layerColors = {risk:'red', market:'orange', flow:'purple', tech:'blue', sentiment:'gold', event:'cyan'};
+
+  app.innerHTML = `
+  <!-- Header -->
+  <div class="hdr">
+    <div class="hdr-title">
+      <h1>🔭 钦天监</h1>
+      <div class="subtitle">情报与决策中心 · 三省六部</div>
+    </div>
+    <div class="hdr-right">
+      <span class="countdown">⟳ ${state.countdown}s</span>
+      <span class="status">${state.lastRefresh ? '更新: ' + state.lastRefresh : '加载中...'}</span>
+      ${state.error ? `<span style="color:var(--red);font-size:11px">⚠ ${state.error}</span>` : ''}
+      <button class="btn btn-primary" onclick="doRefresh()">🔄 刷新</button>
+      <a href="/" class="btn">← 总控台</a>
+    </div>
+  </div>
+
+  <!-- Alert Banner -->
+  ${pending.length > 0 ? `
+  <div style="padding: 8px 24px 0">
+    <div class="alert-banner">
+      <span class="alert-banner-icon">🚨</span>
+      <span class="alert-banner-text">有 <strong>${pending.length}</strong> 条提案待审批，请及时处理</span>
+      <span class="alert-banner-count">${pending.length}</span>
+      <button class="btn btn-primary" onclick="switchTab('proposals')" style="margin-left:8px">去审批 →</button>
+    </div>
+  </div>` : ''}
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab ${state.tab==='market'?'active':''}" onclick="switchTab('market')">📊 行情总览</div>
+    <div class="tab ${state.tab==='signals'?'active':''}" onclick="switchTab('signals')">
+      📡 决策信号
+      ${rules.length > 0 ? `<span style="margin-left:4px;font-size:10px;background:var(--red);color:#fff;padding:1px 5px;border-radius:8px">${rules.length}</span>` : ''}
+    </div>
+    <div class="tab ${state.tab==='proposals'?'active':''}" onclick="switchTab('proposals')">
+      📋 审批历史
+      ${pending.length > 0 ? `<span style="margin-left:4px;font-size:10px;background:var(--yellow);color:#000;padding:1px 5px;border-radius:8px">${pending.length}</span>` : ''}
+    </div>
+  </div>
+
+  ${state.loading ? `
+  <div class="loading"><div class="spinner"></div>正在采集市场数据...</div>` : `
+  <div class="main">
+    <!-- Left Panel -->
+    <div class="left-panel">
+      <!-- BTC Price Card -->
+      <div class="stat-grid" style="grid-template-columns:1fr">
+        <div class="stat-card gold">
+          <div class="slabel">BTC 价格</div>
+          <div class="svalue">${fmtPrice(btc.price)}</div>
+          <div class="ssub">${btc.change_pct > 0 ? '+' : ''}${fmt(btc.change_pct)}% · 24h</div>
+        </div>
+      </div>
+
+      <!-- Market Stats -->
+      <div class="stat-grid">
+        <div class="stat-card ${sentiment.fear_greed <= 25 ? 'red' : sentiment.fear_greed >= 75 ? 'red' : 'blue'}">
+          <div class="slabel">Fear &amp; Greed</div>
+          <div class="svalue">${sentiment.fear_greed || '—'}</div>
+          <div class="ssub">${sentiment.fg_label || '—'}</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="slabel">BTC.Dominance</div>
+          <div class="svalue">${fmt(sentiment.btc_dominance, 1)}%</div>
+          <div class="ssub">${sentiment.btc_dominance > 52 ? 'BTC强势' : '山寨活跃'}</div>
+        </div>
+        <div class="stat-card ${btc.rsi < 30 || btc.rsi > 70 ? 'red' : btc.rsi < 40 || btc.rsi > 60 ? 'orange' : 'green'}">
+          <div class="slabel">RSI 14</div>
+          <div class="svalue">${fmt(btc.rsi, 1)}</div>
+          <div class="ssub">${btc.rsi < 30 ? '超卖' : btc.rsi > 70 ? '超买' : '中性'}</div>
+        </div>
+        <div class="stat-card ${btc.atr_pct < 1.5 ? 'red' : 'orange'}">
+          <div class="slabel">ATR%</div>
+          <div class="svalue">${fmt(btc.atr_pct, 2)}%</div>
+          <div class="ssub">${btc.atr_pct < 1.5 ? '⚠低波动' : '正常'}</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="slabel">ADX 趋势</div>
+          <div class="svalue">${fmt(btc.adx, 1)}</div>
+          <div class="ssub">${btc.adx < 25 ? '震荡' : btc.adx > 40 ? '强趋势' : '弱趋势'}</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="slabel">资金费率</div>
+          <div class="svalue">${fmt(btc.funding_rate_e8 ? btc.funding_rate_e8/1e8*100 : btc.funding_rate*100 || 0, 3)}%</div>
+          <div class="ssub">${(btc.funding_rate_e8 ? btc.funding_rate_e8/1e8*100 : 0) > 0.05 ? '⚠过高' : '正常'}</div>
+        </div>
+      </div>
+
+      <!-- Position Stats -->
+      <div class="market-block">
+        <div class="market-hdr">📊 持仓状态</div>
+        <div class="market-row">
+          <span class="label">当前持仓</span>
+          <span class="value">${positions.length} 仓位</span>
+        </div>
+        <div class="market-row">
+          <span class="label">布林带宽</span>
+          <span class="value ${btc.bb_width < 80 ? 'warn' : 'neutral'}">${fmt(btc.bb_width, 1)}%</span>
+        </div>
+        <div class="market-row">
+          <span class="label">VWAP偏离</span>
+          <span class="value ${Math.abs(btc.price - btc.vwap)/(btc.vwap||1)*100 > 1 ? 'warn' : 'neutral'}">${fmt(Math.abs(btc.price - btc.vwap)/(btc.vwap||1)*100, 2)}%</span>
+        </div>
+        <div class="market-row">
+          <span class="label">量比(1h)</span>
+          <span class="value ${btc.vol_ratio > 3 ? 'up' : btc.vol_ratio < 0.5 ? 'down' : 'neutral'}">${fmt(btc.vol_ratio, 1)}x</span>
+        </div>
+        <div class="market-row">
+          <span class="label">OBI</span>
+          <span class="value ${btc.obi > 0.2 ? 'up' : btc.obi < -0.2 ? 'down' : 'neutral'}">${fmt(btc.obi, 3)}</span>
+        </div>
+        <div class="market-row">
+          <span class="label">EMA50</span>
+          <span class="value ${btc.price > btc.ema50 ? 'up' : 'down'}">${fmtPrice(btc.ema50)}</span>
+        </div>
+        <div class="market-row">
+          <span class="label">EMA200</span>
+          <span class="value ${btc.price > btc.ema200 ? 'up' : 'down'}">${fmtPrice(btc.ema200)}</span>
+        </div>
+        <div class="market-row">
+          <span class="label">24h高</span>
+          <span class="value up">${fmtPrice(btc.high_24h)}</span>
+        </div>
+        <div class="market-row">
+          <span class="label">24h低</span>
+          <span class="value down">${fmtPrice(btc.low_24h)}</span>
+        </div>
+      </div>
+
+      <!-- Layer Summary -->
+      <div class="layer-summary">
+        <div class="layer-title">6层信号状态</div>
+        <div class="layer-badges">
+          ${layerOrder.map(l => {
+            const lrules = rules.filter(r => r.layer === l);
+            const worst = lrules.sort((a,b) => b.urgency - a.urgency)[0];
+            if (!worst) return `<span class="layer-badge low" style="font-size:10px;padding:3px 8px">${layerNames[l]}</span>`;
+            return `<span class="layer-badge ${worst.severity}" title="${worst.reason}">${severityIcon(worst.severity)} ${layerNames[l]} ${worst.urgency}</span>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- Bias Indicator -->
+      <div class="bias-bar">
+        <div class="bias-bar-hdr">市场Bias · 方向信号</div>
+        <div class="bias-bar-track">
+          <div class="bias-bar-fill ${btc.price > btc.ema50 ? 'bull' : 'bear'}" style="width:${btc.ema50 ? Math.min(Math.max((btc.price/btc.ema50-1)*20+50, 10), 90) : 50}%"></div>
+        </div>
+        <div class="bias-labels"><span>↘ 做空倾向</span><span>做多倾向 ↗</span></div>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-panel">
+      ${state.tab === 'market' ? renderMarketTab(rules, btc, sentiment) : ''}
+      ${state.tab === 'signals' ? renderSignalsTab(rules) : ''}
+      ${state.tab === 'proposals' ? renderProposalsTab(proposals) : ''}
+    </div>
+  </div>
+  `}
+  <div class="footer">
+    钦天监 · 情报与决策中心 · 三省六部兵部 · 数据30秒自动刷新 · 规则引擎 P0~P3 · ${now}
+  </div>
+  `;
+}
+
+function renderMarketTab(rules, btc, sentiment) {
+  if (!rules.length) {
+    return `
+    <div class="section">
+      <div class="section-hdr"><span class="section-title">📡 决策信号</span></div>
+      <div class="empty"><div class="empty-icon">✅</div>暂无触发规则，市场状态正常</div>
+    </div>`;
+  }
+  return `
+  <div class="section">
+    <div class="section-hdr">
+      <span class="section-title">📡 当前触发信号</span>
+      <span class="section-count">${rules.length} 条</span>
+    </div>
+    <div class="rule-list">
+      ${rules.map(r => `
+      <div class="rule-card triggered">
+        <div class="rule-icon">${severityIcon(r.severity)}</div>
+        <div class="rule-info">
+          <div class="rule-title">${r.title}</div>
+          <div class="rule-meta">[${r.level}] ${r.rule_id} · ${r.layer.toUpperCase()}层</div>
+          <div class="rule-reason">${r.reason || '—'}</div>
+        </div>
+        <div class="rule-right">
+          ${actionBadge(r.action)}
+          <span style="font-size:11px;color:var(--muted)">U:${r.urgency}</span>
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderSignalsTab(rules) {
+  const layerOrder = ['risk', 'market', 'flow', 'tech', 'sentiment', 'event'];
+  const layerNames = {risk:'P0 · 风控层', market:'P1 · 市场结构', flow:'P1 · 资金流', tech:'P2 · 技术指标', sentiment:'P2 · 市场情绪', event:'P3 · 事件驱动'};
+  const triggeredIds = new Set(rules.map(r => r.rule_id));
+
+  const allRules = [
+    {id:'R001', layer:'risk', title:'单日亏损熔断', threshold:'≤ -5%', action:'freeze'},
+    {id:'R002', layer:'risk', title:'单周亏损暂停', threshold:'≤ -15%', action:'pause_trading'},
+    {id:'R003', layer:'risk', title:'最大持仓超时', threshold:'> 48小时', action:'force_close'},
+    {id:'R004', layer:'risk', title:'拖尾止损', threshold:'未盈利 > 24h 且浮亏 > -2%', action:'force_stop_loss'},
+    {id:'M001', layer:'market', title:'ATR波动率过滤', threshold:'< 1.5%', action:'block_entry'},
+    {id:'M002', layer:'market', title:'ADX趋势强度', threshold:'< 25', action:'block_entry'},
+    {id:'M003', layer:'market', title:'VWAP偏离过滤', threshold:'> ±1%', action:'block_entry'},
+    {id:'M004', layer:'market', title:'EMA50方向信号', threshold:'顺势操作', action:'direction_bias'},
+    {id:'F001', layer:'flow', title:'BTC.Dominance', threshold:'> 52%', action:'direction_bias'},
+    {id:'F002', layer:'flow', title:'资金费率预警', threshold:'> ±0.05%', action:'block_entry'},
+    {id:'T001', layer:'tech', title:'RSI极值', threshold:'< 30 / > 70', action:'signal_boost'},
+    {id:'T002', layer:'tech', title:'布林带收口', threshold:'< 80%', action:'watch_breakout'},
+    {id:'T003', layer:'tech', title:'量能爆发', threshold:'> 3x', action:'confirm_breakout'},
+    {id:'S001', layer:'sentiment', title:'FG极度恐慌逆向', threshold:'≤ 10', action:'reverse_signal'},
+    {id:'S002', layer:'sentiment', title:'FG恐惧禁止做空', threshold:'< 25', action:'block_short'},
+    {id:'S003', layer:'sentiment', title:'FG贪婪禁止做多', threshold:'> 75', action:'block_long'},
+    {id:'E001', layer:'event', title:'ETF到期周', threshold:'每月第四周五', action:'reduce_position'},
+  ];
+
+  return layerOrder.map(layer => {
+    const layerRules = allRules.filter(r => r.layer === layer);
+    const triggered = rules.filter(r => r.layer === layer);
+    const triggeredSet = new Set(triggered.map(r => r.rule_id));
+    return `
+    <div class="section">
+      <div class="section-hdr">
+        <span class="section-title">${layerNames[layer]}</span>
+        ${triggered.length > 0 ? `<span class="section-count" style="background:#ff525222;color:var(--red)">${triggered.length}触发</span>` : `<span class="section-count">全部正常</span>`}
+      </div>
+      <div class="rule-list">
+        ${layerRules.map(rule => {
+          const trig = triggered.find(r => r.rule_id === rule.id);
+          return `
+          <div class="rule-card ${trig ? 'triggered' : 'clear'}">
+            <div class="rule-icon">${trig ? severityIcon(trig.severity) : '✅'}</div>
+            <div class="rule-info">
+              <div class="rule-title" style="${trig ? 'color:var(--red)' : 'color:var(--text)'}">${rule.title}</div>
+              <div class="rule-meta">${rule.id} · 阈值: ${rule.threshold}</div>
+              ${trig ? `<div class="rule-reason">${trig.reason || '—'}</div>` : ''}
+            </div>
+            <div class="rule-right">
+              ${actionBadge(rule.action)}
+              ${trig ? `<span style="font-size:11px;font-weight:700;color:var(--red)">U:${trig.urgency}</span>` : '<span style="font-size:11px;color:var(--green)">正常</span>'}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderProposalsTab(proposals) {
+  if (!proposals.length) {
+    return `<div class="empty"><div class="empty-icon">📋</div>暂无审批记录</div>`;
+  }
+  return `
+  <div class="section">
+    <div class="section-hdr">
+      <span class="section-title">📋 审批历史</span>
+      <span class="section-count">${proposals.length} 条</span>
+      <button class="btn" onclick="doRefresh()" style="margin-left:auto">🔄 刷新</button>
+    </div>
+    <div class="proposal-list">
+      ${proposals.map(p => `
+      <div class="proposal-card ${p.status}">
+        <div class="prop-header">
+          <span style="font-size:14px">${severityIcon(p.severity)}</span>
+          <span class="prop-title">${p.title}</span>
+          ${statusBadge(p.status)}
+        </div>
+        <div class="prop-body">
+          <div><span class="label">当前值：</span><span class="current">${p.current_value}</span> <span class="threshold">阈值: ${p.threshold}</span></div>
+          ${p.reason ? `<div class="reason">原因: ${p.reason}</div>` : ''}
+          ${p.market_data?.btc_price ? `<div style="margin-top:4px;font-size:11px;color:var(--muted)">BTC: ${fmtPrice(p.market_data.btc_price)} | FG: ${p.market_data.fear_greed || '—'}</div>` : ''}
+          ${(p.action === 'inject_long_pair' || p.action === 'inject_short_pair') && p.details ? `
+          <div style="margin-top:8px;padding:8px;background:rgba(63,185,80,0.1);border-radius:6px;border-left:3px solid var(--green);font-size:12px;line-height:1.8;">
+            <div style="color:var(--green);margin-bottom:4px;">📊 注入信号详情</div>
+            <div><span style="color:var(--muted)">交易对：</span><b>${p.details.pair || '?'}</b></div>
+            <div><span style="color:var(--muted)">方向：</span>${p.action === 'inject_long_pair' ? '📈 做多' : '📉 做空'}</div>
+            <div><span style="color:var(--muted)">信心度：</span>${p.details.confidence || 80}%</div>
+            ${p.details.balance_snapshot ? `
+            <div><span style="color:var(--muted)">可用余额：</span>${p.details.balance_snapshot.free_usdt || '?'} USDT</div>
+            <div><span style="color:var(--muted)">预估下注：</span>${p.details.est_stake_amount || '?'} USDT（${p.details.stake_pct || '?'}%）</div>` : ''}
+          </div>` : ''}
+        </div>
+        <div class="prop-footer">
+          <span class="prop-time">[${p.rule_id}] ${p.created_at} ${p.decided_at ? '→ ' + p.decided_at + ' ' + (p.decided_by || '') : ''}</span>
+          ${p.status === 'pending' ? `
+          <div class="prop-actions">
+            <button class="btn btn-ok" onclick="doApprove('${p.id}')">✅ 批准</button>
+            <button class="btn btn-danger" onclick="doReject('${p.id}')">❌ 否决</button>
+          </div>` : ''}
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ── Actions ──
+async function doRefresh() {
+  state.loading = true;
+  state.error = null;
+  render();
+  try {
+    const [md, rules, proposals] = await Promise.all([
+      api('/api/qintianjian/market-data'),
+      api('/api/qintianjian/rules').catch(() => ({triggered:[]})),
+      api('/api/qintianjian/proposals'),
+    ]);
+    state.marketData = md;
+    state.triggeredRules = rules.triggered || [];
+    state.proposals = proposals;
+    state.lastRefresh = new Date().toLocaleTimeString('zh-CN');
+    state.countdown = 30;
+  } catch(e) {
+    state.error = '采集失败: ' + e.message;
+  }
+  state.loading = false;
+  render();
+}
+
+async function doApprove(id) {
+  if (!confirm('确认批准此提案？\n\n将执行相应动作（冻结/平仓等）。')) return;
+  try {
+    const r = await fetch(`/qintianjian/approve/${id}`, {method:'POST', cache:'no-store'}).then(x => x.json());
+    if (r.ok) {
+      showResult('approved', r.proposal || {});
+      doRefresh();
+    } else {
+      alert('操作失败: ' + (r.error || '未知错误'));
+    }
+  } catch(e) { alert('请求失败: ' + e.message); }
+}
+
+async function doReject(id) {
+  try {
+    const r = await fetch(`/qintianjian/reject/${id}`, {method:'POST', cache:'no-store'}).then(x => x.json());
+    if (r.ok) {
+      showResult('rejected', r.proposal || {});
+      doRefresh();
+    } else {
+      alert('操作失败: ' + (r.error || '未知错误'));
+    }
+  } catch(e) { alert('请求失败: ' + e.message); }
+}
+
+function showResult(type, proposal) {
+  const isApprove = type === 'approved';
+  const app = $('#app');
+  app.innerHTML = `
+  <div class="result-page">
+    <div class="result-card">
+      <div class="result-icon">${isApprove ? '✅' : '❌'}</div>
+      <div class="result-title" style="color:${isApprove ? 'var(--green)' : 'var(--red)'}">${isApprove ? '已批准执行' : '已否决'}</div>
+      <div class="result-body">
+        ${isApprove
+          ? `<strong>${proposal.title || '提案'}</strong> 已批准执行。<br>飞书通知已发送，请注意查收。`
+          : `<strong>${proposal.title || '提案'}</strong> 已被否决。<br>系统将保持当前状态。`}
+        ${proposal.action ? `<br>执行动作: <strong>${proposal.action}</strong>` : ''}
+      </div>
+      <div class="result-id">${proposal.id || ''}</div>
+      <div class="result-actions">
+        <a href="/qintianjian" class="btn btn-primary">← 返回钦天监</a>
+        <a href="/" class="btn">返回总控台</a>
+      </div>
+    </div>
+  </div>`;
+  // Auto-return after 5s
+  if (isApprove) {
+    setTimeout(() => { window.location.href = '/qintianjian'; }, 5000);
+  }
+}
+
+function switchTab(tab) {
+  state.tab = tab;
+  render();
+}
+
+// ── Countdown Timer ──
+let countdownTimer;
+function startCountdown() {
+  clearInterval(countdownTimer);
+  countdownTimer = setInterval(() => {
+    state.countdown--;
+    if (state.countdown <= 0) {
+      state.countdown = 30;
+      doRefresh();
+    }
+    const el = document.querySelector('.countdown');
+    if (el) el.textContent = `⟳ ${state.countdown}s`;
+  }, 1000);
+}
+
+// ── Init ──
+doRefresh().then(() => startCountdown());
+</script>
+</body>
+</html>

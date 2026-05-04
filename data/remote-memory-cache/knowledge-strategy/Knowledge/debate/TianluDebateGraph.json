@@ -1,0 +1,17 @@
+{
+  "topics": {
+    "BTC/USDT做多评估": {
+      "arguments": [],
+      "decisions": [
+        {
+          "decision": "STRONG_BUY",
+          "confidence": 1.0,
+          "reasoning": "多空比分 100.00%, 置信度 100.00%",
+          "timestamp": "2026-04-18T09:41:06.076210+00:00"
+        }
+      ]
+    }
+  },
+  "decision_patterns": [],
+  "last_updated": "2026-04-18T09:41:06.076328+00:00"
+}

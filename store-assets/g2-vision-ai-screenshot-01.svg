@@ -1,0 +1,48 @@
+<svg width="1170" height="2532" viewBox="0 0 1170 2532" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1170" height="2532" fill="#0D1218"/>
+  <rect x="0" y="0" width="1170" height="160" fill="#F8FAFC"/>
+  <text x="585" y="102" text-anchor="middle" fill="#111827" font-family="Arial, sans-serif" font-size="42">G2 Vision Voice Assistant</text>
+  <rect x="48" y="220" width="1074" height="130" rx="16" fill="#3B82F6"/>
+  <text x="585" y="302" text-anchor="middle" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="44" font-weight="700">点击开始识别</text>
+  <rect x="48" y="382" width="1074" height="130" rx="16" fill="#0F766E"/>
+  <text x="585" y="464" text-anchor="middle" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="44" font-weight="700">呼叫天禄</text>
+
+  <rect x="48" y="574" width="1074" height="330" rx="16" fill="#121A24" stroke="#31404F" stroke-width="3"/>
+  <text x="92" y="654" fill="#F8FAFC" font-family="Arial, sans-serif" font-size="44" font-weight="700">正在识别</text>
+  <text x="1030" y="654" text-anchor="end" fill="#93A4B7" font-family="Arial, sans-serif" font-size="38">02.4s</text>
+  <rect x="92" y="706" width="986" height="12" rx="6" fill="#253243"/>
+  <rect x="92" y="706" width="715" height="12" rx="6" fill="#38BDF8"/>
+  <g fill="#8796A8" font-family="Arial, sans-serif" font-size="28" text-anchor="middle">
+    <text x="150" y="820">拍照采集</text>
+    <text x="368" y="820">压缩图片</text>
+    <text x="585" y="820">上传后端</text>
+    <text x="802" y="820">AI 识别</text>
+    <text x="1018" y="820">语音朗读</text>
+  </g>
+  <g>
+    <circle cx="150" cy="772" r="18" fill="#34D399"/>
+    <circle cx="368" cy="772" r="18" fill="#34D399"/>
+    <circle cx="585" cy="772" r="18" fill="#34D399"/>
+    <circle cx="802" cy="772" r="18" stroke="#60A5FA" stroke-width="6"/>
+    <circle cx="1018" cy="772" r="18" stroke="#42546B" stroke-width="6"/>
+  </g>
+
+  <rect x="48" y="958" width="1074" height="420" rx="16" fill="#111827" stroke="#31404F" stroke-width="3"/>
+  <text x="92" y="1048" fill="#F8FAFC" font-family="Arial, sans-serif" font-size="44" font-weight="700">语音对话</text>
+  <text x="92" y="1130" fill="#CBD5E1" font-family="Arial, sans-serif" font-size="34">点击“呼叫天禄”，然后说：</text>
+  <text x="92" y="1190" fill="#A7F3D0" font-family="Arial, sans-serif" font-size="34">你好天禄，帮我看一下。</text>
+  <rect x="92" y="1244" width="986" height="92" rx="14" fill="#17202A" stroke="#31404F" stroke-width="2"/>
+  <text x="124" y="1303" fill="#94A3B8" font-family="Arial, sans-serif" font-size="30">语音不可用时，可在这里输入问题</text>
+
+  <rect x="48" y="1432" width="1074" height="340" rx="16" fill="#101820" stroke="#31404F" stroke-width="3"/>
+  <text x="92" y="1522" fill="#F8FAFC" font-family="Arial, sans-serif" font-size="44" font-weight="700">历史记录</text>
+  <rect x="92" y="1578" width="986" height="92" rx="14" fill="#17202A"/>
+  <text x="124" y="1637" fill="#CBD5E1" font-family="Arial, sans-serif" font-size="31">▶ 视觉 · 拍照识别 · 17:11:32</text>
+
+  <rect x="48" y="1830" width="1074" height="470" rx="16" fill="#17202A" stroke="#31404F" stroke-width="3"/>
+  <text x="92" y="1916" fill="#F8FAFC" font-family="Arial, sans-serif" font-size="38">识别结果</text>
+  <line x1="92" y1="1962" x2="330" y2="1962" stroke="#F8FAFC" stroke-width="6"/>
+  <text x="92" y="2038" fill="#E5E7EB" font-family="Arial, sans-serif" font-size="34">画面已识别，重点信息会同步显示到</text>
+  <text x="92" y="2094" fill="#E5E7EB" font-family="Arial, sans-serif" font-size="34">G2 镜片，并通过手机或蓝牙耳机朗读。</text>
+  <text x="92" y="2170" fill="#A7F3D0" font-family="Arial, sans-serif" font-size="32">MiniMax AI · G2 Display · TianLu Memory</text>
+</svg>

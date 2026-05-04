@@ -1,0 +1,46 @@
+<svg width="576" height="288" viewBox="0 0 576 288" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="28" y1="18" x2="548" y2="268" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#08111E"/>
+      <stop offset="0.55" stop-color="#0F172A"/>
+      <stop offset="1" stop-color="#0B2A22"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="260" y1="116" x2="520" y2="184" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38BDF8"/>
+      <stop offset="0.5" stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#34D399"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(410 145) rotate(18) scale(190 82)">
+      <stop stop-color="#38BDF8" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#111827" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="576" height="288" rx="18" fill="url(#bg)"/>
+  <rect x="10" y="10" width="556" height="268" rx="14" stroke="#26384E" stroke-width="1"/>
+  <circle cx="484" cy="64" r="74" fill="#2563EB" opacity="0.13"/>
+  <circle cx="90" cy="240" r="82" fill="#14B8A6" opacity="0.12"/>
+
+  <text x="34" y="82" fill="#E5F2FF" font-family="Arial, sans-serif" font-size="34" font-weight="800">G2 Vision AI</text>
+  <text x="36" y="114" fill="#9FB1C7" font-family="Arial, sans-serif" font-size="15" font-weight="600">g2-视觉-语音助手</text>
+  <text x="36" y="154" fill="#CBD5E1" font-family="Arial, sans-serif" font-size="15">手机摄像头识别 · G2 镜片显示</text>
+  <text x="36" y="178" fill="#CBD5E1" font-family="Arial, sans-serif" font-size="15">MiniMax AI 问答 · 天禄记忆只读检索</text>
+
+  <g transform="translate(34 214)">
+    <rect width="116" height="34" rx="8" fill="#132235" stroke="#294158"/>
+    <circle cx="18" cy="17" r="5" fill="#38BDF8"/>
+    <text x="31" y="22" fill="#EAF4FF" font-family="Arial, sans-serif" font-size="13" font-weight="700">拍照识别</text>
+  </g>
+  <g transform="translate(162 214)">
+    <rect width="116" height="34" rx="8" fill="#132235" stroke="#294158"/>
+    <circle cx="18" cy="17" r="5" fill="#34D399"/>
+    <text x="31" y="22" fill="#EAF4FF" font-family="Arial, sans-serif" font-size="13" font-weight="700">语音朗读</text>
+  </g>
+
+  <g transform="translate(300 68)">
+    <ellipse cx="120" cy="82" rx="142" ry="58" fill="url(#glow)"/>
+    <path d="M16 80C27 55 59 43 91 50L124 58C141 62 159 62 176 58L209 50C241 43 273 55 284 80C296 106 279 135 250 140C236 143 222 142 209 138L177 129C160 124 140 124 123 129L91 138C78 142 64 143 50 140C21 135 4 106 16 80Z" fill="#08111E" stroke="url(#edge)" stroke-width="6"/>
+    <path d="M50 85C58 70 79 64 98 69L130 77C144 81 156 81 170 77L202 69C221 64 242 70 250 85C258 100 249 117 233 121C224 123 216 123 208 120L174 111C158 107 142 107 126 111L92 120C84 123 76 123 67 121C51 117 42 100 50 85Z" fill="#E0F2FE" opacity="0.13"/>
+    <rect x="104" y="82" width="32" height="15" rx="7.5" fill="#0F172A" stroke="#334155" stroke-width="2"/>
+    <circle cx="120" cy="89.5" r="3.5" fill="#34D399"/>
+  </g>
+</svg>

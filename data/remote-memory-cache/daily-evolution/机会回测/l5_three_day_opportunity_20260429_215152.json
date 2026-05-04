@@ -1,0 +1,974 @@
+{
+  "started_at": "2026-04-29 21:51:52",
+  "days": 3,
+  "runtime_params": {
+    "vol_signal_mult": 5.0,
+    "giant_vol_mult": 7.0,
+    "sr_entry_range_pct": 1.0,
+    "rsi_long_block": 70.0,
+    "rsi_short_block": 30.0,
+    "min_opportunity_pct": 1.5
+  },
+  "candidate_params": {
+    "vol_signal_mult": 3.0,
+    "giant_vol_mult": 5.0,
+    "sr_entry_range_pct": 2.0,
+    "rsi_long_block": 75.0,
+    "rsi_short_block": 25.0,
+    "min_opportunity_pct": 1.0
+  },
+  "m5_status": "current_l5_available_not_historical",
+  "summary": {
+    "opportunity_count": 30,
+    "runtime_trigger_count": 0,
+    "candidate_trigger_count": 0,
+    "avg_opportunity_pct": 2.221,
+    "miss_reason_counts": {
+      "M1量比不足": 30,
+      "M1净流向不支持": 28,
+      "M2距离不达标": 7,
+      "机会幅度1.13%": 1,
+      "机会幅度0.48%": 1,
+      "机会幅度0.99%": 1,
+      "机会幅度1.06%": 1,
+      "机会幅度0.50%": 1,
+      "机会幅度1.44%": 1,
+      "机会幅度1.01%": 1,
+      "机会幅度1.27%": 1,
+      "机会幅度1.04%": 1,
+      "机会幅度0.37%": 1,
+      "机会幅度0.97%": 1
+    }
+  },
+  "opportunities": [
+    {
+      "date": "2026-04-27",
+      "pair": "BTC/USDT",
+      "direction": "long",
+      "best_entry_time": "2026-04-27 00:45",
+      "entry_price": 77885.6,
+      "best_exit_time": "2026-04-27 09:00",
+      "exit_price": 79439.2,
+      "opportunity_pct": 1.995,
+      "suggested_stop": 77800.0,
+      "stop_distance_pct": 0.11,
+      "m1_vol_ratio": 0.742,
+      "m1_netflow": -0.486,
+      "m2_dist_support_pct": 0.226,
+      "m2_dist_resistance_pct": 0.369,
+      "m3_giant": false,
+      "m4_rsi_15m": 54.77,
+      "m4_atr_pct": 0.142,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "M1量比不足 0.74x < 5.0x",
+        "M1净流向不支持做多 -0.49"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 0.74x < 3.0x",
+        "M1净流向不支持做多 -0.49"
+      ]
+    },
+    {
+      "date": "2026-04-27",
+      "pair": "BTC/USDT",
+      "direction": "short",
+      "best_entry_time": "2026-04-27 08:45",
+      "entry_price": 79239.6,
+      "best_exit_time": "2026-04-27 23:15",
+      "exit_price": 76530.0,
+      "opportunity_pct": 3.541,
+      "suggested_stop": 79439.2,
+      "stop_distance_pct": 0.252,
+      "m1_vol_ratio": 4.779,
+      "m1_netflow": 0.467,
+      "m2_dist_support_pct": 1.931,
+      "m2_dist_resistance_pct": 0.101,
+      "m3_giant": false,
+      "m4_rsi_15m": 69.68,
+      "m4_atr_pct": 0.513,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "M1量比不足 4.78x < 5.0x",
+        "M1净流向不支持做空 +0.47"
+      ],
+      "candidate_reasons": [
+        "M1净流向不支持做空 +0.47"
+      ]
+    },
+    {
+      "date": "2026-04-28",
+      "pair": "BTC/USDT",
+      "direction": "long",
+      "best_entry_time": "2026-04-28 00:30",
+      "entry_price": 76566.8,
+      "best_exit_time": "2026-04-28 08:45",
+      "exit_price": 77428.9,
+      "opportunity_pct": 1.126,
+      "suggested_stop": 76412.3,
+      "stop_distance_pct": 0.202,
+      "m1_vol_ratio": 0.688,
+      "m1_netflow": -0.282,
+      "m2_dist_support_pct": 0.048,
+      "m2_dist_resistance_pct": 3.751,
+      "m3_giant": false,
+      "m4_rsi_15m": 28.74,
+      "m4_atr_pct": 0.424,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "机会幅度1.13% < 1.5%",
+        "M1量比不足 0.69x < 5.0x",
+        "M1净流向不支持做多 -0.28"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 0.69x < 3.0x",
+        "M1净流向不支持做多 -0.28"
+      ]
+    },
+    {
+      "date": "2026-04-28",
+      "pair": "BTC/USDT",
+      "direction": "short",
+      "best_entry_time": "2026-04-28 08:30",
+      "entry_price": 77352.2,
+      "best_exit_time": "2026-04-28 22:30",
+      "exit_price": 75640.0,
+      "opportunity_pct": 2.264,
+      "suggested_stop": 77428.9,
+      "stop_distance_pct": 0.099,
+      "m1_vol_ratio": 0.817,
+      "m1_netflow": 0.378,
+      "m2_dist_support_pct": 1.215,
+      "m2_dist_resistance_pct": 2.698,
+      "m3_giant": false,
+      "m4_rsi_15m": 73.5,
+      "m4_atr_pct": 0.19,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "M1量比不足 0.82x < 5.0x",
+        "M1净流向不支持做空 +0.38",
+        "M2距阻力过远 2.70% > 1.0%"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 0.82x < 3.0x",
+        "M1净流向不支持做空 +0.38",
+        "M2距阻力过远 2.70% > 2.0%"
+      ]
+    },
+    {
+      "date": "2026-04-29",
+      "pair": "BTC/USDT",
+      "direction": "long",
+      "best_entry_time": "2026-04-29 00:30",
+      "entry_price": 75886.1,
+      "best_exit_time": "2026-04-29 12:30",
+      "exit_price": 77400.0,
+      "opportunity_pct": 1.995,
+      "suggested_stop": 75850.4,
+      "stop_distance_pct": 0.047,
+      "m1_vol_ratio": 0.464,
+      "m1_netflow": -0.533,
+      "m2_dist_support_pct": 0.324,
+      "m2_dist_resistance_pct": 2.033,
+      "m3_giant": false,
+      "m4_rsi_15m": 39.35,
+      "m4_atr_pct": 0.285,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "M1量比不足 0.46x < 5.0x",
+        "M1净流向不支持做多 -0.53"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 0.46x < 3.0x",
+        "M1净流向不支持做多 -0.53"
+      ]
+    },
+    {
+      "date": "2026-04-29",
+      "pair": "BTC/USDT",
+      "direction": "short",
+      "best_entry_time": "2026-04-29 12:30",
+      "entry_price": 77252.5,
+      "best_exit_time": "2026-04-29 14:45",
+      "exit_price": 76881.0,
+      "opportunity_pct": 0.483,
+      "suggested_stop": 77400.0,
+      "stop_distance_pct": 0.191,
+      "m1_vol_ratio": 4.609,
+      "m1_netflow": 0.599,
+      "m2_dist_support_pct": 2.087,
+      "m2_dist_resistance_pct": 0.191,
+      "m3_giant": false,
+      "m4_rsi_15m": 76.55,
+      "m4_atr_pct": 0.25,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "机会幅度0.48% < 1.5%",
+        "M1量比不足 4.61x < 5.0x",
+        "M1净流向不支持做空 +0.60"
+      ],
+      "candidate_reasons": [
+        "机会幅度0.48% < 1.0%",
+        "M1净流向不支持做空 +0.60"
+      ]
+    },
+    {
+      "date": "2026-04-27",
+      "pair": "ETH/USDT",
+      "direction": "long",
+      "best_entry_time": "2026-04-27 00:45",
+      "entry_price": 2341.61,
+      "best_exit_time": "2026-04-27 09:00",
+      "exit_price": 2404.16,
+      "opportunity_pct": 2.671,
+      "suggested_stop": 2339.4,
+      "stop_distance_pct": 0.094,
+      "m1_vol_ratio": 0.703,
+      "m1_netflow": -0.337,
+      "m2_dist_support_pct": 0.778,
+      "m2_dist_resistance_pct": 0.572,
+      "m3_giant": false,
+      "m4_rsi_15m": 65.08,
+      "m4_atr_pct": 0.227,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "M1量比不足 0.70x < 5.0x",
+        "M1净流向不支持做多 -0.34"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 0.70x < 3.0x",
+        "M1净流向不支持做多 -0.34"
+      ]
+    },
+    {
+      "date": "2026-04-27",
+      "pair": "ETH/USDT",
+      "direction": "short",
+      "best_entry_time": "2026-04-27 11:30",
+      "entry_price": 2398.47,
+      "best_exit_time": "2026-04-27 23:15",
+      "exit_price": 2263.3,
+      "opportunity_pct": 5.972,
+      "suggested_stop": 2399.59,
+      "stop_distance_pct": 0.047,
+      "m1_vol_ratio": 0.869,
+      "m1_netflow": 0.207,
+      "m2_dist_support_pct": 3.13,
+      "m2_dist_resistance_pct": 0.237,
+      "m3_giant": false,
+      "m4_rsi_15m": 74.83,
+      "m4_atr_pct": 0.413,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "M1量比不足 0.87x < 5.0x",
+        "M1净流向不支持做空 +0.21"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 0.87x < 3.0x",
+        "M1净流向不支持做空 +0.21"
+      ]
+    },
+    {
+      "date": "2026-04-28",
+      "pair": "ETH/USDT",
+      "direction": "long",
+      "best_entry_time": "2026-04-28 00:30",
+      "entry_price": 2274.08,
+      "best_exit_time": "2026-04-28 07:45",
+      "exit_price": 2325.0,
+      "opportunity_pct": 2.239,
+      "suggested_stop": 2272.73,
+      "stop_distance_pct": 0.059,
+      "m1_vol_ratio": 0.461,
+      "m1_netflow": 0.25,
+      "m2_dist_support_pct": 0.474,
+      "m2_dist_resistance_pct": 5.72,
+      "m3_giant": false,
+      "m4_rsi_15m": 27.97,
+      "m4_atr_pct": 0.52,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "M1量比不足 0.46x < 5.0x"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 0.46x < 3.0x"
+      ]
+    },
+    {
+      "date": "2026-04-28",
+      "pair": "ETH/USDT",
+      "direction": "short",
+      "best_entry_time": "2026-04-28 08:30",
+      "entry_price": 2305.91,
+      "best_exit_time": "2026-04-28 21:00",
+      "exit_price": 2256.64,
+      "opportunity_pct": 2.183,
+      "suggested_stop": 2310.4,
+      "stop_distance_pct": 0.195,
+      "m1_vol_ratio": 0.603,
+      "m1_netflow": 0.828,
+      "m2_dist_support_pct": 1.848,
+      "m2_dist_resistance_pct": 4.261,
+      "m3_giant": false,
+      "m4_rsi_15m": 72.97,
+      "m4_atr_pct": 0.284,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "M1量比不足 0.60x < 5.0x",
+        "M1净流向不支持做空 +0.83",
+        "M2距阻力过远 4.26% > 1.0%"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 0.60x < 3.0x",
+        "M1净流向不支持做空 +0.83",
+        "M2距阻力过远 4.26% > 2.0%"
+      ]
+    },
+    {
+      "date": "2026-04-29",
+      "pair": "ETH/USDT",
+      "direction": "long",
+      "best_entry_time": "2026-04-29 00:30",
+      "entry_price": 2273.84,
+      "best_exit_time": "2026-04-29 12:30",
+      "exit_price": 2341.53,
+      "opportunity_pct": 2.977,
+      "suggested_stop": 2272.93,
+      "stop_distance_pct": 0.04,
+      "m1_vol_ratio": 0.495,
+      "m1_netflow": -0.361,
+      "m2_dist_support_pct": 0.756,
+      "m2_dist_resistance_pct": 2.25,
+      "m3_giant": false,
+      "m4_rsi_15m": 59.79,
+      "m4_atr_pct": 0.384,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "M1量比不足 0.49x < 5.0x",
+        "M1净流向不支持做多 -0.36"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 0.49x < 3.0x",
+        "M1净流向不支持做多 -0.36"
+      ]
+    },
+    {
+      "date": "2026-04-29",
+      "pair": "ETH/USDT",
+      "direction": "short",
+      "best_entry_time": "2026-04-29 03:45",
+      "entry_price": 2300.52,
+      "best_exit_time": "2026-04-29 09:30",
+      "exit_price": 2278.06,
+      "opportunity_pct": 0.986,
+      "suggested_stop": 2304.31,
+      "stop_distance_pct": 0.165,
+      "m1_vol_ratio": 2.344,
+      "m1_netflow": 0.521,
+      "m2_dist_support_pct": 1.907,
+      "m2_dist_resistance_pct": 1.064,
+      "m3_giant": false,
+      "m4_rsi_15m": 70.97,
+      "m4_atr_pct": 0.321,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "机会幅度0.99% < 1.5%",
+        "M1量比不足 2.34x < 5.0x",
+        "M1净流向不支持做空 +0.52",
+        "M2距阻力过远 1.06% > 1.0%"
+      ],
+      "candidate_reasons": [
+        "机会幅度0.99% < 1.0%",
+        "M1量比不足 2.34x < 3.0x",
+        "M1净流向不支持做空 +0.52"
+      ]
+    },
+    {
+      "date": "2026-04-27",
+      "pair": "SOL/USDT",
+      "direction": "long",
+      "best_entry_time": "2026-04-27 00:45",
+      "entry_price": 86.36,
+      "best_exit_time": "2026-04-27 10:45",
+      "exit_price": 88.05,
+      "opportunity_pct": 1.957,
+      "suggested_stop": 86.12,
+      "stop_distance_pct": 0.278,
+      "m1_vol_ratio": 0.749,
+      "m1_netflow": -0.497,
+      "m2_dist_support_pct": 0.579,
+      "m2_dist_resistance_pct": 0.394,
+      "m3_giant": false,
+      "m4_rsi_15m": 69.77,
+      "m4_atr_pct": 0.192,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "M1量比不足 0.75x < 5.0x",
+        "M1净流向不支持做多 -0.50"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 0.75x < 3.0x",
+        "M1净流向不支持做多 -0.50"
+      ]
+    },
+    {
+      "date": "2026-04-27",
+      "pair": "SOL/USDT",
+      "direction": "short",
+      "best_entry_time": "2026-04-27 11:30",
+      "entry_price": 87.96,
+      "best_exit_time": "2026-04-27 23:15",
+      "exit_price": 83.57,
+      "opportunity_pct": 5.253,
+      "suggested_stop": 88.01,
+      "stop_distance_pct": 0.057,
+      "m1_vol_ratio": 0.508,
+      "m1_netflow": 1.0,
+      "m2_dist_support_pct": 2.387,
+      "m2_dist_resistance_pct": 0.102,
+      "m3_giant": false,
+      "m4_rsi_15m": 76.96,
+      "m4_atr_pct": 0.41,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "M1量比不足 0.51x < 5.0x",
+        "M1净流向不支持做空 +1.00"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 0.51x < 3.0x",
+        "M1净流向不支持做空 +1.00"
+      ]
+    },
+    {
+      "date": "2026-04-28",
+      "pair": "SOL/USDT",
+      "direction": "long",
+      "best_entry_time": "2026-04-28 03:15",
+      "entry_price": 84.01,
+      "best_exit_time": "2026-04-28 08:45",
+      "exit_price": 84.9,
+      "opportunity_pct": 1.059,
+      "suggested_stop": 83.78,
+      "stop_distance_pct": 0.274,
+      "m1_vol_ratio": 0.771,
+      "m1_netflow": -0.887,
+      "m2_dist_support_pct": 0.524,
+      "m2_dist_resistance_pct": 4.809,
+      "m3_giant": false,
+      "m4_rsi_15m": 46.27,
+      "m4_atr_pct": 0.274,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "机会幅度1.06% < 1.5%",
+        "M1量比不足 0.77x < 5.0x",
+        "M1净流向不支持做多 -0.89"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 0.77x < 3.0x",
+        "M1净流向不支持做多 -0.89"
+      ]
+    },
+    {
+      "date": "2026-04-28",
+      "pair": "SOL/USDT",
+      "direction": "short",
+      "best_entry_time": "2026-04-28 08:30",
+      "entry_price": 84.79,
+      "best_exit_time": "2026-04-28 22:30",
+      "exit_price": 82.92,
+      "opportunity_pct": 2.255,
+      "suggested_stop": 84.9,
+      "stop_distance_pct": 0.13,
+      "m1_vol_ratio": 0.368,
+      "m1_netflow": 0.432,
+      "m2_dist_support_pct": 1.439,
+      "m2_dist_resistance_pct": 3.845,
+      "m3_giant": false,
+      "m4_rsi_15m": 69.68,
+      "m4_atr_pct": 0.22,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "M1量比不足 0.37x < 5.0x",
+        "M1净流向不支持做空 +0.43",
+        "M2距阻力过远 3.84% > 1.0%"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 0.37x < 3.0x",
+        "M1净流向不支持做空 +0.43",
+        "M2距阻力过远 3.84% > 2.0%"
+      ]
+    },
+    {
+      "date": "2026-04-29",
+      "pair": "SOL/USDT",
+      "direction": "long",
+      "best_entry_time": "2026-04-29 00:30",
+      "entry_price": 83.32,
+      "best_exit_time": "2026-04-29 12:30",
+      "exit_price": 85.03,
+      "opportunity_pct": 2.052,
+      "suggested_stop": 83.29,
+      "stop_distance_pct": 0.036,
+      "m1_vol_ratio": 0.654,
+      "m1_netflow": 0.127,
+      "m2_dist_support_pct": 0.48,
+      "m2_dist_resistance_pct": 1.896,
+      "m3_giant": false,
+      "m4_rsi_15m": 50.54,
+      "m4_atr_pct": 0.373,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "M1量比不足 0.65x < 5.0x"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 0.65x < 3.0x"
+      ]
+    },
+    {
+      "date": "2026-04-29",
+      "pair": "SOL/USDT",
+      "direction": "short",
+      "best_entry_time": "2026-04-29 12:45",
+      "entry_price": 84.91,
+      "best_exit_time": "2026-04-29 14:45",
+      "exit_price": 84.49,
+      "opportunity_pct": 0.497,
+      "suggested_stop": 84.99,
+      "stop_distance_pct": 0.094,
+      "m1_vol_ratio": 1.45,
+      "m1_netflow": 0.422,
+      "m2_dist_support_pct": 2.344,
+      "m2_dist_resistance_pct": 0.141,
+      "m3_giant": false,
+      "m4_rsi_15m": 85.16,
+      "m4_atr_pct": 0.263,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "机会幅度0.50% < 1.5%",
+        "M1量比不足 1.45x < 5.0x",
+        "M1净流向不支持做空 +0.42"
+      ],
+      "candidate_reasons": [
+        "机会幅度0.50% < 1.0%",
+        "M1量比不足 1.45x < 3.0x",
+        "M1净流向不支持做空 +0.42"
+      ]
+    },
+    {
+      "date": "2026-04-27",
+      "pair": "BNB/USDT",
+      "direction": "long",
+      "best_entry_time": "2026-04-27 00:45",
+      "entry_price": 630.65,
+      "best_exit_time": "2026-04-27 11:45",
+      "exit_price": 639.75,
+      "opportunity_pct": 1.443,
+      "suggested_stop": 630.05,
+      "stop_distance_pct": 0.095,
+      "m1_vol_ratio": 0.352,
+      "m1_netflow": -0.776,
+      "m2_dist_support_pct": 0.166,
+      "m2_dist_resistance_pct": 0.309,
+      "m3_giant": false,
+      "m4_rsi_15m": 51.65,
+      "m4_atr_pct": 0.121,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "机会幅度1.44% < 1.5%",
+        "M1量比不足 0.35x < 5.0x",
+        "M1净流向不支持做多 -0.78"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 0.35x < 3.0x",
+        "M1净流向不支持做多 -0.78"
+      ]
+    },
+    {
+      "date": "2026-04-27",
+      "pair": "BNB/USDT",
+      "direction": "short",
+      "best_entry_time": "2026-04-27 11:30",
+      "entry_price": 639.6,
+      "best_exit_time": "2026-04-27 23:15",
+      "exit_price": 618.25,
+      "opportunity_pct": 3.453,
+      "suggested_stop": 639.75,
+      "stop_distance_pct": 0.023,
+      "m1_vol_ratio": 1.334,
+      "m1_netflow": 0.663,
+      "m2_dist_support_pct": 1.563,
+      "m2_dist_resistance_pct": 999.0,
+      "m3_giant": false,
+      "m4_rsi_15m": 72.96,
+      "m4_atr_pct": 0.247,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "M1量比不足 1.33x < 5.0x",
+        "M1净流向不支持做空 +0.66",
+        "M2距阻力过远 999.00% > 1.0%"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 1.33x < 3.0x",
+        "M1净流向不支持做空 +0.66",
+        "M2距阻力过远 999.00% > 2.0%"
+      ]
+    },
+    {
+      "date": "2026-04-28",
+      "pair": "BNB/USDT",
+      "direction": "long",
+      "best_entry_time": "2026-04-28 00:15",
+      "entry_price": 620.95,
+      "best_exit_time": "2026-04-28 08:45",
+      "exit_price": 627.2,
+      "opportunity_pct": 1.007,
+      "suggested_stop": 620.55,
+      "stop_distance_pct": 0.064,
+      "m1_vol_ratio": 0.483,
+      "m1_netflow": -0.593,
+      "m2_dist_support_pct": 0.435,
+      "m2_dist_resistance_pct": 3.028,
+      "m3_giant": false,
+      "m4_rsi_15m": 35.31,
+      "m4_atr_pct": 0.315,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "机会幅度1.01% < 1.5%",
+        "M1量比不足 0.48x < 5.0x",
+        "M1净流向不支持做多 -0.59"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 0.48x < 3.0x",
+        "M1净流向不支持做多 -0.59"
+      ]
+    },
+    {
+      "date": "2026-04-28",
+      "pair": "BNB/USDT",
+      "direction": "short",
+      "best_entry_time": "2026-04-28 08:45",
+      "entry_price": 626.65,
+      "best_exit_time": "2026-04-28 22:30",
+      "exit_price": 618.8,
+      "opportunity_pct": 1.269,
+      "suggested_stop": 627.2,
+      "stop_distance_pct": 0.088,
+      "m1_vol_ratio": 0.257,
+      "m1_netflow": 0.243,
+      "m2_dist_support_pct": 1.34,
+      "m2_dist_resistance_pct": 2.09,
+      "m3_giant": false,
+      "m4_rsi_15m": 72.66,
+      "m4_atr_pct": 0.138,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "机会幅度1.27% < 1.5%",
+        "M1量比不足 0.26x < 5.0x",
+        "M1净流向不支持做空 +0.24",
+        "M2距阻力过远 2.09% > 1.0%"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 0.26x < 3.0x",
+        "M1净流向不支持做空 +0.24",
+        "M2距阻力过远 2.09% > 2.0%"
+      ]
+    },
+    {
+      "date": "2026-04-29",
+      "pair": "BNB/USDT",
+      "direction": "long",
+      "best_entry_time": "2026-04-29 00:15",
+      "entry_price": 621.8,
+      "best_exit_time": "2026-04-29 12:45",
+      "exit_price": 628.25,
+      "opportunity_pct": 1.037,
+      "suggested_stop": 621.4,
+      "stop_distance_pct": 0.064,
+      "m1_vol_ratio": 0.477,
+      "m1_netflow": -0.522,
+      "m2_dist_support_pct": 0.482,
+      "m2_dist_resistance_pct": 0.868,
+      "m3_giant": false,
+      "m4_rsi_15m": 44.33,
+      "m4_atr_pct": 0.233,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "机会幅度1.04% < 1.5%",
+        "M1量比不足 0.48x < 5.0x",
+        "M1净流向不支持做多 -0.52"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 0.48x < 3.0x",
+        "M1净流向不支持做多 -0.52"
+      ]
+    },
+    {
+      "date": "2026-04-29",
+      "pair": "BNB/USDT",
+      "direction": "short",
+      "best_entry_time": "2026-04-29 12:45",
+      "entry_price": 627.4,
+      "best_exit_time": "2026-04-29 14:45",
+      "exit_price": 625.1,
+      "opportunity_pct": 0.368,
+      "suggested_stop": 628.25,
+      "stop_distance_pct": 0.135,
+      "m1_vol_ratio": 1.334,
+      "m1_netflow": 0.48,
+      "m2_dist_support_pct": 1.371,
+      "m2_dist_resistance_pct": 0.135,
+      "m3_giant": false,
+      "m4_rsi_15m": 77.51,
+      "m4_atr_pct": 0.18,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "机会幅度0.37% < 1.5%",
+        "M1量比不足 1.33x < 5.0x",
+        "M1净流向不支持做空 +0.48"
+      ],
+      "candidate_reasons": [
+        "机会幅度0.37% < 1.0%",
+        "M1量比不足 1.33x < 3.0x",
+        "M1净流向不支持做空 +0.48"
+      ]
+    },
+    {
+      "date": "2026-04-27",
+      "pair": "DOGE/USDT",
+      "direction": "long",
+      "best_entry_time": "2026-04-27 00:45",
+      "entry_price": 0.09862,
+      "best_exit_time": "2026-04-27 11:00",
+      "exit_price": 0.10079,
+      "opportunity_pct": 2.2,
+      "suggested_stop": 0.09843,
+      "stop_distance_pct": 0.193,
+      "m1_vol_ratio": 0.431,
+      "m1_netflow": -0.082,
+      "m2_dist_support_pct": 0.558,
+      "m2_dist_resistance_pct": 0.507,
+      "m3_giant": false,
+      "m4_rsi_15m": 57.06,
+      "m4_atr_pct": 0.245,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "M1量比不足 0.43x < 5.0x",
+        "M1净流向不支持做多 -0.08"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 0.43x < 3.0x",
+        "M1净流向不支持做多 -0.08"
+      ]
+    },
+    {
+      "date": "2026-04-27",
+      "pair": "DOGE/USDT",
+      "direction": "short",
+      "best_entry_time": "2026-04-27 11:00",
+      "entry_price": 0.10071,
+      "best_exit_time": "2026-04-27 23:15",
+      "exit_price": 0.09687,
+      "opportunity_pct": 3.964,
+      "suggested_stop": 0.10079,
+      "stop_distance_pct": 0.079,
+      "m1_vol_ratio": 1.393,
+      "m1_netflow": 0.183,
+      "m2_dist_support_pct": 2.621,
+      "m2_dist_resistance_pct": 0.079,
+      "m3_giant": false,
+      "m4_rsi_15m": 71.03,
+      "m4_atr_pct": 0.46,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "M1量比不足 1.39x < 5.0x",
+        "M1净流向不支持做空 +0.18"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 1.39x < 3.0x",
+        "M1净流向不支持做空 +0.18"
+      ]
+    },
+    {
+      "date": "2026-04-28",
+      "pair": "DOGE/USDT",
+      "direction": "long",
+      "best_entry_time": "2026-04-28 00:30",
+      "entry_price": 0.09731,
+      "best_exit_time": "2026-04-28 12:15",
+      "exit_price": 0.10093,
+      "opportunity_pct": 3.72,
+      "suggested_stop": 0.09726,
+      "stop_distance_pct": 0.051,
+      "m1_vol_ratio": 1.077,
+      "m1_netflow": -0.653,
+      "m2_dist_support_pct": 0.452,
+      "m2_dist_resistance_pct": 3.576,
+      "m3_giant": false,
+      "m4_rsi_15m": 38.68,
+      "m4_atr_pct": 0.522,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "M1量比不足 1.08x < 5.0x",
+        "M1净流向不支持做多 -0.65"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 1.08x < 3.0x",
+        "M1净流向不支持做多 -0.65"
+      ]
+    },
+    {
+      "date": "2026-04-28",
+      "pair": "DOGE/USDT",
+      "direction": "short",
+      "best_entry_time": "2026-04-28 13:45",
+      "entry_price": 0.10019,
+      "best_exit_time": "2026-04-28 22:15",
+      "exit_price": 0.09803,
+      "opportunity_pct": 2.203,
+      "suggested_stop": 0.10037,
+      "stop_distance_pct": 0.18,
+      "m1_vol_ratio": 1.413,
+      "m1_netflow": 0.62,
+      "m2_dist_support_pct": 3.314,
+      "m2_dist_resistance_pct": 0.739,
+      "m3_giant": false,
+      "m4_rsi_15m": 63.43,
+      "m4_atr_pct": 0.551,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "M1量比不足 1.41x < 5.0x",
+        "M1净流向不支持做空 +0.62"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 1.41x < 3.0x",
+        "M1净流向不支持做空 +0.62"
+      ]
+    },
+    {
+      "date": "2026-04-29",
+      "pair": "DOGE/USDT",
+      "direction": "long",
+      "best_entry_time": "2026-04-29 07:15",
+      "entry_price": 0.09901,
+      "best_exit_time": "2026-04-29 12:30",
+      "exit_price": 0.10246,
+      "opportunity_pct": 3.484,
+      "suggested_stop": 0.09875,
+      "stop_distance_pct": 0.263,
+      "m1_vol_ratio": 1.144,
+      "m1_netflow": -0.635,
+      "m2_dist_support_pct": 0.99,
+      "m2_dist_resistance_pct": 1.939,
+      "m3_giant": false,
+      "m4_rsi_15m": 29.88,
+      "m4_atr_pct": 0.278,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "M1量比不足 1.14x < 5.0x",
+        "M1净流向不支持做多 -0.63"
+      ],
+      "candidate_reasons": [
+        "M1量比不足 1.14x < 3.0x",
+        "M1净流向不支持做多 -0.63"
+      ]
+    },
+    {
+      "date": "2026-04-29",
+      "pair": "DOGE/USDT",
+      "direction": "short",
+      "best_entry_time": "2026-04-29 04:00",
+      "entry_price": 0.09971,
+      "best_exit_time": "2026-04-29 07:30",
+      "exit_price": 0.09875,
+      "opportunity_pct": 0.972,
+      "suggested_stop": 0.10011,
+      "stop_distance_pct": 0.401,
+      "m1_vol_ratio": 0.658,
+      "m1_netflow": 0.133,
+      "m2_dist_support_pct": 1.875,
+      "m2_dist_resistance_pct": 1.224,
+      "m3_giant": false,
+      "m4_rsi_15m": 57.45,
+      "m4_atr_pct": 0.299,
+      "m5_status": "current_l5_available_not_historical",
+      "runtime_trigger": false,
+      "candidate_trigger": false,
+      "missed_reasons": [
+        "机会幅度0.97% < 1.5%",
+        "M1量比不足 0.66x < 5.0x",
+        "M1净流向不支持做空 +0.13",
+        "M2距阻力过远 1.22% > 1.0%"
+      ],
+      "candidate_reasons": [
+        "机会幅度0.97% < 1.0%",
+        "M1量比不足 0.66x < 3.0x",
+        "M1净流向不支持做空 +0.13"
+      ]
+    }
+  ],
+  "recommendations": [
+    "天眼AI提示词需要把“低量比但大幅机会”标为回测观察样本，不直接执行；参数层可每周测试3x/5x分市场阈值。",
+    "M2入场距离1%较严格，建议每周回测1%/1.5%/2%三档，但实盘仍需M1/M4/L5同向确认。",
+    "M5当前只有实时/近实时快照，不足以还原三日历史微结构；需要把订单薄/OI/爆仓按15m落盘后再做机构级归因。",
+    "出山AI可使用表内最佳出场时间与止损距离，训练动态止盈话术: 机会幅度、回撤止损、是否过早/过晚出场。",
+    "所有结果为hindsight机会审计，只进入候选参数池，不直接修改实盘runtime。"
+  ]
+}

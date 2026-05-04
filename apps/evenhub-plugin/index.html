@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>G2 Vision Voice Assistant</title>
+  </head>
+  <body>
+    <main id="app">
+      <section class="web-hud-screen" aria-label="天禄助手 HUD">
+        <div class="web-hud-topbar">
+          <span data-current-time>--:--</span>
+          <span class="web-hud-title">天禄助手</span>
+          <span><span data-g2-battery>G2 加载中</span> · <span data-r1-battery>R1 加载中</span></span>
+        </div>
+        <div class="web-hud-hero">
+          <div>
+            <h1>天禄助手</h1>
+            <p>你好，交易之路，天禄同行。</p>
+          </div>
+          <div class="web-hud-scan" aria-hidden="true"></div>
+        </div>
+      <section class="bookmark-panel" aria-label="功能书签">
+        <div class="bookmark-tabs">
+          <button id="capture-button" class="bookmark-tab" type="button" data-bookmark="vision">
+            <span class="bookmark-icon">□</span>
+            <span>
+              <strong>视觉识别</strong>
+              <small>拍照看图</small>
+            </span>
+          </button>
+          <button id="voice-button" class="bookmark-tab" type="button" data-bookmark="voice">
+            <span class="bookmark-icon">◉</span>
+            <span>
+              <strong>呼叫天禄</strong>
+              <small>语音问答</small>
+            </span>
+          </button>
+          <button id="trading-button" class="bookmark-tab" type="button" data-bookmark="trading">
+            <span class="bookmark-icon">◇</span>
+            <span>
+              <strong>交易状态</strong>
+              <small>只读监控</small>
+            </span>
+          </button>
+          <button id="openclaw-button" class="bookmark-tab" type="button" data-bookmark="openclaw">
+            <span class="bookmark-icon">OC</span>
+            <span>
+              <strong>设置</strong>
+              <small>连接诊断</small>
+            </span>
+          </button>
+        </div>
+        <div id="bookmark-card" class="bookmark-card">
+          <div>
+            <div id="bookmark-kicker">书签 1 / 4</div>
+            <div id="bookmark-title">视觉识别</div>
+            <div id="bookmark-desc">拍照识别画面，结果显示到眼镜并朗读。</div>
+          </div>
+          <div id="bookmark-action">R1 上下切换，单击执行</div>
+        </div>
+        <div class="bookmark-action-panels">
+          <div class="bookmark-action-row bookmark-action-row-vision" aria-label="视觉识别操作">
+            <label id="direct-camera-label" class="camera-action-label" for="file-fallback">直接拍照</label>
+            <label id="album-camera-label" class="camera-action-label" for="album-fallback">相册选图</label>
+          </div>
+          <div class="bookmark-action-row bookmark-action-row-voice" aria-label="呼叫天禄操作">
+          </div>
+          <div class="bookmark-action-row bookmark-action-row-trading" aria-label="交易状态操作">
+            <button id="trading-preset-status" type="button">运行状态</button>
+            <button id="trading-preset-prices" type="button">白名单价格</button>
+            <button id="trading-preset-positions" type="button">持仓盈亏</button>
+            <button id="trading-preset-risk" type="button">风控状态</button>
+            <button id="trading-preset-distribution" type="button">资金分布</button>
+            <button id="trading-preset-attribution" type="button">订单归因</button>
+          </div>
+          <div class="bookmark-action-row bookmark-action-row-openclaw" aria-label="设置操作">
+            <button id="connection-scan-shortcut" type="button">连接扫描</button>
+            <button id="permission-check-shortcut" type="button">权限自检</button>
+          </div>
+        </div>
+      </section>
+      <div id="web-hud-footer" class="web-hud-footer">● 正在检测 G2 / R1 连接</div>
+      </section>
+      <section class="status-panel" data-phone-section="status-panel" aria-live="polite">
+        <div class="status-header">
+          <span id="status-title">待命</span>
+          <span id="status-time">00.0s</span>
+        </div>
+        <div class="progress-track" aria-hidden="true">
+          <div id="progress-bar"></div>
+        </div>
+        <ol class="steps" id="steps">
+          <li data-step="capture"><span></span>拍照采集</li>
+          <li data-step="compress"><span></span>压缩图片</li>
+          <li data-step="upload"><span></span>上传后端</li>
+          <li data-step="vision"><span></span>AI 识别</li>
+          <li data-step="speak"><span></span>语音朗读</li>
+        </ol>
+      </section>
+      <section class="vision-result-panel" data-phone-section="vision-result-panel" aria-live="polite">
+        <div class="vision-result-header">
+          <div>
+            <div class="vision-result-title">视觉结果</div>
+            <div id="vision-result-meta">未识别</div>
+          </div>
+        </div>
+        <div id="vision-image-info">请选择“直接拍照”或“相册选图”。完成拍照/选图后会自动上传识别。</div>
+        <div id="vision-result-answer">暂无识别结果</div>
+        <div class="vision-question-panel">
+          <textarea
+            id="vision-question-input"
+            rows="3"
+            placeholder="可选：先输入看图问题，例如：这是什么？帮我读一下文字。"
+          ></textarea>
+          <button id="vision-followup-button" type="button">追问图片</button>
+        </div>
+      </section>
+      <section class="vision-result-panel" aria-label="R1 相机调试" style="display:none">
+        <div class="vision-result-header">
+          <div>
+            <div class="vision-result-title">Camera / R1 Debug</div>
+            <div id="r1-camera-debug-meta">未进入 R1 视觉模式</div>
+          </div>
+        </div>
+        <div id="r1-camera-debug">等待 R1 触发直接拍照 / 选择照片。</div>
+      </section>
+      <section class="history-panel history-panel-vision" data-phone-section="history-panel-vision">
+        <div class="history-header">
+          <div class="history-title">视觉历史</div>
+          <button class="clear-history-button" type="button" data-clear-history>清空</button>
+        </div>
+        <div data-history-list="vision"></div>
+      </section>
+      <video id="camera-preview" playsinline muted></video>
+      <canvas id="capture-canvas"></canvas>
+      <input id="file-fallback" type="file" accept="image/*" capture="environment" aria-label="直接拍照" />
+      <input id="album-fallback" type="file" accept="image/*" aria-label="从相册选择照片" />
+      <section class="voice-panel" data-phone-section="voice-panel">
+        <button id="voice-orb-action" class="voice-orb-button" type="button" aria-label="按住语音对话" aria-pressed="false">
+          <span class="voice-orb-bars" aria-hidden="true"></span>
+          <span class="voice-orb-label">按住说话</span>
+        </button>
+        <div class="voice-title">手动文本对话</div>
+        <div id="voice-status">网页端按住圆形按钮说话；眼镜端进入“呼叫天禄”后自动录音，R1 单击结束识别。</div>
+        <div class="text-ask-row">
+          <textarea id="text-question-input" rows="3" placeholder="语音不可用时，在这里输入：你好天禄，帮我看一下刚才识别的内容"></textarea>
+          <button id="text-question-button" type="button">发送</button>
+        </div>
+        <button id="replay-speech-button" type="button" hidden>重播朗读</button>
+        <button id="confirm-camera-button" type="button" hidden>确认打开摄像头</button>
+        <div id="voice-transcript"></div>
+        <div class="voice-followup-row">
+          <textarea id="voice-followup-input" rows="2" placeholder="继续追问刚才的回答"></textarea>
+          <button id="voice-followup-button" type="button">继续追问</button>
+        </div>
+        <div class="voice-debug-panel" aria-label="Voice Debug" hidden>
+          <div class="voice-debug-title">Voice Debug</div>
+          <pre id="voice-debug">等待启动 G2 麦克风采集。</pre>
+        </div>
+        <section class="history-panel history-panel-voice">
+          <div class="history-header">
+            <div class="history-title">语音历史</div>
+            <button class="clear-history-button" type="button" data-clear-history>清空</button>
+          </div>
+          <div data-history-list="voice"></div>
+        </section>
+      </section>
+      <section class="trading-panel" data-phone-section="trading-panel">
+        <div class="trading-header">
+          <div>
+            <div class="trading-title">交易只读</div>
+            <div id="trading-mode">未刷新</div>
+          </div>
+          <button id="refresh-trading-button" type="button">刷新</button>
+        </div>
+        <div id="trading-summary">点击“交易状态”查看白名单价格、机器人、持仓和风险的只读入口。</div>
+        <div id="trading-hits"></div>
+        <section class="history-panel history-panel-trading">
+          <div class="history-header">
+            <div class="history-title">交易历史</div>
+            <button class="clear-history-button" type="button" data-clear-history>清空</button>
+          </div>
+          <div data-history-list="trading"></div>
+        </section>
+      </section>
+      <section class="config-panel" data-phone-section="config-panel">
+        <div class="config-header">
+          <div>
+            <div class="config-title">自定义配置</div>
+            <div id="config-status">本机保存，改完无需重新上传 EHPK</div>
+          </div>
+          <button id="reset-config-button" type="button">重置</button>
+        </div>
+        <label>
+          后端地址
+          <input id="config-api-base" type="url" autocomplete="off" />
+        </label>
+        <label>
+          朗读声音 ID
+          <input id="config-tts-voice" type="text" autocomplete="off" />
+        </label>
+        <label>
+          G2 录音时长 ms
+          <input id="config-record-ms" type="number" min="1500" max="120000" step="100" />
+        </label>
+        <label class="config-checkbox">
+          <input id="config-auto-speak" type="checkbox" />
+          自动朗读回答
+        </label>
+        <label class="config-checkbox">
+          <input id="config-auto-listen" type="checkbox" />
+          打开后自动监听“天禄”
+        </label>
+        <div class="tts-tools">
+          <div class="permission-title">朗读设置</div>
+          <pre id="tts-status-debug">当前 voiceId：待查询
+当前朗读来源：—
+最近朗读状态：—
+最近错误：—</pre>
+          <button id="test-tts-button" type="button">试听当前声音</button>
+        </div>
+        <div class="permission-tools">
+          <div class="permission-title">连接与权限诊断</div>
+          <div id="permission-status">未检测</div>
+          <div class="permission-actions">
+            <button id="connection-scan-button" type="button">一键扫描</button>
+            <button id="connection-repair-button" type="button">一键修复</button>
+            <button id="permission-check-button" type="button">权限自检</button>
+            <button id="permission-request-button" type="button">一键请求权限</button>
+          </div>
+        </div>
+        <div class="battery-tools">
+          <div class="permission-title">设备电量</div>
+          <pre id="battery-debug-info">G2：未上报
+R1：未上报
+来源：cache
+更新时间：--</pre>
+          <button id="refresh-battery-button" type="button">刷新电量</button>
+        </div>
+        <button id="save-config-button" type="button">保存配置</button>
+        <section class="history-panel history-panel-settings">
+          <div class="history-header">
+            <div class="history-title">设置历史</div>
+            <button class="clear-history-button" type="button" data-clear-history>清空</button>
+          </div>
+          <div data-history-list="openclaw"></div>
+        </section>
+      </section>
+      <section class="history-panel">
+        <div class="history-header">
+          <div class="history-title">全部历史</div>
+          <button id="clear-history-button" class="clear-history-button" type="button" data-clear-history>清空</button>
+        </div>
+        <div id="history-list" data-history-list="all"></div>
+      </section>
+      <pre id="debug-log" data-phone-section="debug-log"></pre>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

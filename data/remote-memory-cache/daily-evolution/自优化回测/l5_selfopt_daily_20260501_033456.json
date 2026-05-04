@@ -1,0 +1,542 @@
+{
+  "mode": "daily",
+  "started_at": "2026-05-01 03:30:08",
+  "hours": 72,
+  "max_pairs": 2,
+  "guard": {
+    "ok": true,
+    "reasons": [],
+    "loadavg": [
+      4.09,
+      4.51,
+      4.87
+    ],
+    "df_root": "/dev/disk3s1s1       228   10        99    10%  425956 1043676400    0%   /",
+    "root_avail_gb": 99,
+    "running_backtests": [],
+    "u_state_count": 0
+  },
+  "recent_samples": {
+    "ok": true,
+    "error": null,
+    "sample_count": 300,
+    "sample_preview": [
+      {
+        "sample_id": "tianyan:TY-20260501004801-9733C2",
+        "source": "tianyan",
+        "pair": "ETH/USDT",
+        "action": "normal",
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260501004801-FF5617",
+        "source": "tianyan",
+        "pair": "BTC/USDT",
+        "action": "normal",
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260501004801-EDA364",
+        "source": "tianyan",
+        "pair": "ETH/USDT",
+        "action": "normal",
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260501004801-747A4F",
+        "source": "tianyan",
+        "pair": "BTC/USDT",
+        "action": "normal",
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260501004801-59F1EF",
+        "source": "tianyan",
+        "pair": "ETH/USDT",
+        "action": "normal",
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260501004801-102C14",
+        "source": "tianyan",
+        "pair": "BTC/USDT",
+        "action": "normal",
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260501004801-99C7EF",
+        "source": "tianyan",
+        "pair": "ETH/USDT",
+        "action": "normal",
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260501004801-9A77FD",
+        "source": "tianyan",
+        "pair": "BTC/USDT",
+        "action": "normal",
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260501004614-F1C84B",
+        "source": "tianyan",
+        "pair": "ETH/USDT",
+        "action": "normal",
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260501004614-D5A6A5",
+        "source": "tianyan",
+        "pair": "BTC/USDT",
+        "action": "normal",
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260501004614-84EB4B",
+        "source": "tianyan",
+        "pair": "ETH/USDT",
+        "action": "normal",
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260501004614-D32B73",
+        "source": "tianyan",
+        "pair": "BTC/USDT",
+        "action": "normal",
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260501004614-812051",
+        "source": "tianyan",
+        "pair": "ETH/USDT",
+        "action": "normal",
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260501004614-48A2D9",
+        "source": "tianyan",
+        "pair": "BTC/USDT",
+        "action": "normal",
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260501004614-305C2F",
+        "source": "tianyan",
+        "pair": "ETH/USDT",
+        "action": "normal",
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260501004614-3B81A6",
+        "source": "tianyan",
+        "pair": "BTC/USDT",
+        "action": "normal",
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260501003845-F608FE",
+        "source": "tianyan",
+        "pair": "BTC/USDT",
+        "action": "normal",
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260501003845-FC4C55",
+        "source": "tianyan",
+        "pair": "BTC/USDT",
+        "action": "normal",
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260501003845-9BCEB1",
+        "source": "tianyan",
+        "pair": "BTC/USDT",
+        "action": "normal",
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      },
+      {
+        "sample_id": "tianyan:TY-20260501003845-3BE8B7",
+        "source": "tianyan",
+        "pair": "BTC/USDT",
+        "action": "normal",
+        "confidence": null,
+        "has_m1": true,
+        "has_m2": true,
+        "has_m3": true,
+        "has_m4": true,
+        "has_l5": true
+      }
+    ],
+    "pair_counts": {
+      "ETH/USDT": 104,
+      "BTC/USDT": 124,
+      "SOL/USDT": 72
+    },
+    "data_completeness": {
+      "m1": {
+        "filled": 300,
+        "total": 300,
+        "pct": 100.0
+      },
+      "m2": {
+        "filled": 300,
+        "total": 300,
+        "pct": 100.0
+      },
+      "m3": {
+        "filled": 300,
+        "total": 300,
+        "pct": 100.0
+      },
+      "m4": {
+        "filled": 300,
+        "total": 300,
+        "pct": 100.0
+      },
+      "l5": {
+        "filled": 300,
+        "total": 300,
+        "pct": 100.0
+      }
+    }
+  },
+  "ai_flow": {
+    "ok": true,
+    "error": null,
+    "pairs": {
+      "bnb": {
+        "m1": true,
+        "m2": true,
+        "m3": true,
+        "m4": true,
+        "l5": true
+      },
+      "btc": {
+        "m1": true,
+        "m2": true,
+        "m3": true,
+        "m4": true,
+        "l5": true
+      },
+      "doge": {
+        "m1": true,
+        "m2": true,
+        "m3": true,
+        "m4": true,
+        "l5": true
+      },
+      "eth": {
+        "m1": true,
+        "m2": true,
+        "m3": true,
+        "m4": true,
+        "l5": true
+      },
+      "sol": {
+        "m1": true,
+        "m2": true,
+        "m3": true,
+        "m4": true,
+        "l5": true
+      }
+    }
+  },
+  "selected_pairs": [
+    "BTC/USDT",
+    "ETH/USDT"
+  ],
+  "backtests": [
+    {
+      "pair": "BTC/USDT",
+      "runtime": {
+        "pair": "BTC/USDT",
+        "ok": false,
+        "output": "/Users/luxiangnan/freqtrade_console/bt_tools/backtest_core/reports/daily_selfopt/selfopt_BTC_USDT_runtime_20260501_033009.json",
+        "window": {
+          "start": "2026-03-21",
+          "end": "2026-04-20"
+        },
+        "error": "Command '['/Library/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python', '/Users/luxiangnan/freqtrade_console/bt_tools/backtest_core/run_backtest.py', '--pair', 'BTC/USDT', '--exchange', 'gate', '--start', '2026-03-21', '--end', '2026-04-20', '--output', '/Users/luxiangnan/freqtrade_console/bt_tools/backtest_core/reports/daily_selfopt/selfopt_BTC_USDT_runtime_20260501_033009.json']' timed out after 90 seconds"
+      },
+      "candidate": {
+        "pair": "BTC/USDT",
+        "ok": false,
+        "output": "/Users/luxiangnan/freqtrade_console/bt_tools/backtest_core/reports/daily_selfopt/selfopt_BTC_USDT_candidate_20260501_033139.json",
+        "window": {
+          "start": "2026-03-21",
+          "end": "2026-04-20"
+        },
+        "error": "Command '['/Library/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python', '/Users/luxiangnan/freqtrade_console/bt_tools/backtest_core/run_backtest.py', '--pair', 'BTC/USDT', '--exchange', 'gate', '--start', '2026-03-21', '--end', '2026-04-20', '--output', '/Users/luxiangnan/freqtrade_console/bt_tools/backtest_core/reports/daily_selfopt/selfopt_BTC_USDT_candidate_20260501_033139.json', '--params-file', '/Users/luxiangnan/freqtrade_console/bt_tools/backtest_core/config/v65_l5_candidate_20260429.json']' timed out after 90 seconds"
+      }
+    },
+    {
+      "pair": "ETH/USDT",
+      "runtime": {
+        "pair": "ETH/USDT",
+        "ok": true,
+        "output": "/Users/luxiangnan/freqtrade_console/bt_tools/backtest_core/reports/daily_selfopt/selfopt_ETH_USDT_runtime_20260501_033309.json",
+        "window": {
+          "start": "2026-03-21",
+          "end": "2026-04-20"
+        },
+        "stats": {
+          "total_trades": 2,
+          "open_trades": 0,
+          "wins": 1,
+          "losses": 1,
+          "win_rate_pct": 50.0,
+          "total_pnl_pct": 144.93,
+          "avg_pnl_pct": 72.46,
+          "avg_holding_minutes": 8100.0,
+          "exit_distribution": {
+            "L2_TF_30M": 1,
+            "END_OF_DATA": 1
+          },
+          "sr_entry_hit_rate": 100.0,
+          "sr_exit_hit_rate": 0.0,
+          "sr_entry_hits": 2,
+          "sr_exit_hits": 0,
+          "by_pair": {
+            "ETH/USDT": {
+              "trades": 2,
+              "wins": 1,
+              "win_rate": 50.0,
+              "total_pnl": 144.92800465611464,
+              "avg_pnl": 72.46400232805732
+            }
+          },
+          "worst_trade": -5.1,
+          "best_trade": 150.02,
+          "open_trades_detail": []
+        },
+        "trades": [
+          {
+            "pair": "ETH/USDT",
+            "direction": "long",
+            "entry_time": "2026-03-30 06:45:00+08:00",
+            "entry_price": 1973.89,
+            "exit_time": "1970-01-01 00:29:35.603700",
+            "exit_price": 2270.12,
+            "pnl_pct": 150.0242189281063,
+            "pnl_abs": 0.0,
+            "leverage": 10,
+            "exit_reason": "L2_TF_30M",
+            "holding_minutes": 12990,
+            "near_sr_entry": true,
+            "near_sr_exit": false,
+            "vol_mult_entry": 7.8055375947887375,
+            "fund_flow_entry": 28.380184759067568,
+            "touches_entry": 0,
+            "is_open": false
+          },
+          {
+            "pair": "ETH/USDT",
+            "direction": "short",
+            "entry_time": "2026-04-17 18:15:00+08:00",
+            "entry_price": 2342.35,
+            "exit_time": "2026-04-19 23:45:00+08:00",
+            "exit_price": 2330.53,
+            "pnl_pct": -5.096214271991679,
+            "pnl_abs": 0.0,
+            "leverage": 10,
+            "exit_reason": "END_OF_DATA",
+            "holding_minutes": 3210,
+            "near_sr_entry": true,
+            "near_sr_exit": false,
+            "vol_mult_entry": 11.759301679080576,
+            "fund_flow_entry": -47.23605933938585,
+            "touches_entry": 0,
+            "is_open": false
+          }
+        ],
+        "params_source": "runtime:gate"
+      },
+      "candidate": {
+        "pair": "ETH/USDT",
+        "ok": true,
+        "output": "/Users/luxiangnan/freqtrade_console/bt_tools/backtest_core/reports/daily_selfopt/selfopt_ETH_USDT_candidate_20260501_033402.json",
+        "window": {
+          "start": "2026-03-21",
+          "end": "2026-04-20"
+        },
+        "stats": {
+          "total_trades": 2,
+          "open_trades": 0,
+          "wins": 1,
+          "losses": 1,
+          "win_rate_pct": 50.0,
+          "total_pnl_pct": 144.93,
+          "avg_pnl_pct": 72.46,
+          "avg_holding_minutes": 8100.0,
+          "exit_distribution": {
+            "L2_TF_30M": 1,
+            "END_OF_DATA": 1
+          },
+          "sr_entry_hit_rate": 100.0,
+          "sr_exit_hit_rate": 0.0,
+          "sr_entry_hits": 2,
+          "sr_exit_hits": 0,
+          "by_pair": {
+            "ETH/USDT": {
+              "trades": 2,
+              "wins": 1,
+              "win_rate": 50.0,
+              "total_pnl": 144.92800465611464,
+              "avg_pnl": 72.46400232805732
+            }
+          },
+          "worst_trade": -5.1,
+          "best_trade": 150.02,
+          "open_trades_detail": []
+        },
+        "trades": [
+          {
+            "pair": "ETH/USDT",
+            "direction": "long",
+            "entry_time": "2026-03-30 06:45:00+08:00",
+            "entry_price": 1973.89,
+            "exit_time": "1970-01-01 00:29:35.603700",
+            "exit_price": 2270.12,
+            "pnl_pct": 150.0242189281063,
+            "pnl_abs": 0.0,
+            "leverage": 10,
+            "exit_reason": "L2_TF_30M",
+            "holding_minutes": 12990,
+            "near_sr_entry": true,
+            "near_sr_exit": false,
+            "vol_mult_entry": 7.8055375947887375,
+            "fund_flow_entry": 28.380184759067568,
+            "touches_entry": 0,
+            "is_open": false
+          },
+          {
+            "pair": "ETH/USDT",
+            "direction": "short",
+            "entry_time": "2026-04-17 18:15:00+08:00",
+            "entry_price": 2342.35,
+            "exit_time": "2026-04-19 23:45:00+08:00",
+            "exit_price": 2330.53,
+            "pnl_pct": -5.096214271991679,
+            "pnl_abs": 0.0,
+            "leverage": 10,
+            "exit_reason": "END_OF_DATA",
+            "holding_minutes": 3210,
+            "near_sr_entry": true,
+            "near_sr_exit": false,
+            "vol_mult_entry": 11.759301679080576,
+            "fund_flow_entry": -47.23605933938585,
+            "touches_entry": 0,
+            "is_open": false
+          }
+        ],
+        "params_source": "runtime:gate+candidate:v65_l5_best_tested_20260429"
+      }
+    }
+  ],
+  "three_day_opportunity_audit": {
+    "ok": false,
+    "error": " recent call last):\n  File \"/Users/luxiangnan/freqtrade_console/scripts/l5_three_day_opportunity_backtest.py\", line 424, in <module>\n    raise SystemExit(main())\n                     ~~~~^^\n  File \"/Users/luxiangnan/freqtrade_console/scripts/l5_three_day_opportunity_backtest.py\", line 374, in main\n    op = best_for_direction(pair, day, df, direction, m5_status)\n  File \"/Users/luxiangnan/freqtrade_console/scripts/l5_three_day_opportunity_backtest.py\", line 177, in best_for_direction\n    runtime_ok, missed = evaluate_trigger(entry, direction, RUNTIME, move_pct, m5_status)\n                         ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/luxiangnan/freqtrade_console/scripts/l5_three_day_opportunity_backtest.py\", line 208, in evaluate_trigger\n    rsi = float(row.get(\"rsi_15m\") or 50)\n                ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"pandas/_libs/missing.pyx\", line 392, in pandas._libs.missing.NAType.__bool__\nTypeError: boolean value of NA is ambiguous\n"
+  },
+  "recommendations": [
+    "BTC/USDT 近可用30天回测闭合样本0笔，样本不足，只能生成候选。",
+    "ETH/USDT 近可用30天回测闭合样本2笔，样本不足，只能生成候选。",
+    "ETH/USDT 有1笔END_OF_DATA结算，出山AI需继续优化动态止盈/时间止盈话术。",
+    "所有建议只进入候选池，不自动改实盘runtime参数。"
+  ],
+  "finished_at": "2026-05-01 03:34:56"
+}

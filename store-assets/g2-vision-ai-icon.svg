@@ -1,0 +1,29 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="88" y1="76" x2="920" y2="958" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#08111E"/>
+      <stop offset="0.56" stop-color="#0F172A"/>
+      <stop offset="1" stop-color="#0B2A22"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="180" y1="374" x2="844" y2="612" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38BDF8"/>
+      <stop offset="0.48" stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#34D399"/>
+    </linearGradient>
+    <filter id="shadow" x="120" y="286" width="784" height="392" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="24" stdDeviation="34" flood-color="#000000" flood-opacity="0.42"/>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+  <circle cx="754" cy="244" r="180" fill="#2563EB" opacity="0.15"/>
+  <circle cx="248" cy="760" r="220" fill="#14B8A6" opacity="0.12"/>
+  <g filter="url(#shadow)">
+    <path d="M190 469C220 401 307 368 390 388L465 406C496 413 528 413 559 406L634 388C717 368 804 401 834 469C866 540 820 620 743 632C708 638 673 635 639 625L569 605C532 594 492 594 455 605L385 625C351 635 316 638 281 632C204 620 158 540 190 469Z" fill="#08111E" stroke="url(#edge)" stroke-width="18"/>
+    <path d="M280 483C302 443 359 426 411 440L482 459C502 464 522 464 542 459L613 440C665 426 722 443 744 483C765 521 742 568 698 579C675 585 652 583 630 576L555 554C527 546 497 546 469 554L394 576C372 583 349 585 326 579C282 568 259 521 280 483Z" fill="#E0F2FE" opacity="0.13"/>
+    <rect x="468" y="473" width="88" height="40" rx="20" fill="#0F172A" stroke="#334155" stroke-width="5"/>
+    <circle cx="512" cy="493" r="11" fill="#34D399"/>
+  </g>
+  <path d="M268 748H756" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
+  <text x="512" y="756" text-anchor="middle" fill="#E5F2FF" font-family="Arial, sans-serif" font-size="84" font-weight="800">G2</text>
+  <text x="512" y="822" text-anchor="middle" fill="#93C5FD" font-family="Arial, sans-serif" font-size="44" font-weight="700">Vision AI</text>
+</svg>

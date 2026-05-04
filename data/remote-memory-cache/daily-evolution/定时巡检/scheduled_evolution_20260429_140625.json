@@ -1,0 +1,258 @@
+{
+  "started_at": "2026-04-29 14:05:11",
+  "status": "ok_with_issues",
+  "self_heal": [
+    "9099 控制台健康"
+  ],
+  "issues": [
+    {
+      "level": "medium",
+      "where": "replay_samples",
+      "message": "HTTP Error 500: INTERNAL SERVER ERROR"
+    },
+    {
+      "level": "medium",
+      "where": "l5_market_intel",
+      "message": "接口延时偏高: 11.508s",
+      "round": 3
+    }
+  ],
+  "rounds": [
+    {
+      "round": 1,
+      "started_at": "2026-04-29 14:05:12",
+      "endpoints": {
+        "ai_data_flow": {
+          "ok": true,
+          "latency_s": 0.005,
+          "error": null,
+          "summary": {
+            "ok": true,
+            "pairs": 5,
+            "blank_count": 0,
+            "has_l5_pairs": 5
+          }
+        },
+        "l5_market_intel": {
+          "ok": true,
+          "latency_s": 6.117,
+          "error": null,
+          "validation_levels": {
+            "triple": 10,
+            "quiet": 5
+          }
+        },
+        "l5_daily_attribution": {
+          "ok": true,
+          "latency_s": 0.002,
+          "error": null
+        },
+        "l5_evolution": {
+          "ok": true,
+          "latency_s": 0.228,
+          "error": null
+        },
+        "agent_status": {
+          "ok": true,
+          "latency_s": 0.003,
+          "error": null,
+          "agent_count": 12
+        },
+        "backtest_overview": {
+          "ok": true,
+          "latency_s": 0.045,
+          "error": null
+        }
+      },
+      "issues": []
+    },
+    {
+      "round": 2,
+      "started_at": "2026-04-29 14:05:39",
+      "endpoints": {
+        "ai_data_flow": {
+          "ok": true,
+          "latency_s": 0.011,
+          "error": null,
+          "summary": {
+            "ok": true,
+            "pairs": 5,
+            "blank_count": 0,
+            "has_l5_pairs": 5
+          }
+        },
+        "l5_market_intel": {
+          "ok": true,
+          "latency_s": 5.659,
+          "error": null,
+          "validation_levels": {
+            "triple": 10,
+            "quiet": 5
+          }
+        },
+        "l5_daily_attribution": {
+          "ok": true,
+          "latency_s": 0.003,
+          "error": null
+        },
+        "l5_evolution": {
+          "ok": true,
+          "latency_s": 0.002,
+          "error": null
+        },
+        "agent_status": {
+          "ok": true,
+          "latency_s": 0.002,
+          "error": null,
+          "agent_count": 12
+        },
+        "backtest_overview": {
+          "ok": true,
+          "latency_s": 0.06,
+          "error": null
+        }
+      },
+      "issues": []
+    },
+    {
+      "round": 3,
+      "started_at": "2026-04-29 14:06:05",
+      "endpoints": {
+        "ai_data_flow": {
+          "ok": true,
+          "latency_s": 0.287,
+          "error": null,
+          "summary": {
+            "ok": true,
+            "pairs": 5,
+            "blank_count": 0,
+            "has_l5_pairs": 5
+          }
+        },
+        "l5_market_intel": {
+          "ok": true,
+          "latency_s": 11.508,
+          "error": null,
+          "validation_levels": {
+            "triple": 10,
+            "quiet": 5
+          }
+        },
+        "l5_daily_attribution": {
+          "ok": true,
+          "latency_s": 0.001,
+          "error": null
+        },
+        "l5_evolution": {
+          "ok": true,
+          "latency_s": 0.001,
+          "error": null
+        },
+        "agent_status": {
+          "ok": true,
+          "latency_s": 0.001,
+          "error": null,
+          "agent_count": 12
+        },
+        "backtest_overview": {
+          "ok": true,
+          "latency_s": 0.059,
+          "error": null
+        }
+      },
+      "issues": [
+        {
+          "level": "medium",
+          "where": "l5_market_intel",
+          "message": "接口延时偏高: 11.508s"
+        }
+      ]
+    }
+  ],
+  "agents": {
+    "registered_count": 12,
+    "registered_ports": [
+      8081,
+      8082,
+      8083,
+      8084,
+      9090,
+      9091,
+      9092,
+      9093,
+      9094,
+      9095,
+      9096,
+      9097
+    ],
+    "unhealthy_command_ports": [],
+    "autopilot_enabled": true
+  },
+  "refresh": {
+    "replay_samples": {
+      "ok": false,
+      "latency_s": 1.181,
+      "error": "HTTP Error 500: INTERNAL SERVER ERROR"
+    },
+    "param_registry": {
+      "ok": true,
+      "latency_s": 0.024,
+      "error": null,
+      "count": 104,
+      "refreshed": true
+    }
+  },
+  "backtest": {
+    "start_ok": true,
+    "start_latency_s": 0.003,
+    "error": null,
+    "payload": {
+      "exchange": "gateio",
+      "pair": "BTC/USDT",
+      "days": 30,
+      "timeframe": "15m"
+    },
+    "job_id": "d14e06d7",
+    "final_status": {
+      "detail": "✅ 回测完成",
+      "done": true,
+      "elapsed_s": 8.2,
+      "error": null,
+      "job_id": "d14e06d7",
+      "progress": 100,
+      "results": {
+        "avg_pnl": 0.0,
+        "exit_reason_dist": {},
+        "losses": 0,
+        "max_drawdown": 0.0,
+        "open_trades": 1,
+        "result_file": "/Users/luxiangnan/freqtrade_console/bt_tools/backtest_core/reports/bt_d14e06d7.json",
+        "sharpe_ratio": "-",
+        "source": "subprocess_run_backtest",
+        "stdout_tail": "2026-04-29 14:06:18,040   ✅ 加载参数: runtime_params_v61_gate_17656685222.json\n2026-04-29 14:06:18,041   ✅ 加载参数: runtime_params_v61_okx_9095.json\n2026-04-29 14:06:18,041 \n============================================================\n2026-04-29 14:06:18,041 回测: BTC/USDT (gateio)\n2026-04-29 14:06:18,041 参数: vol_mult=5.0, sr_range=1.0%, p1=15.0%, p2=25.0%, p3=35.0%\n2026-04-29 14:06:18,041 ============================================================\n2026-04-29 14:06:18,139   ✅ 加载 BTC/USDT 15m: 8640根\n2026-04-29 14:06:18,143   ✅ 加载 BTC/USDT 1h: 2160根\n2026-04-29 14:06:18,146   ✅ 加载 BTC/USDT 4h: 540根\n2026-04-29 14:06:18,150 [BacktestAutopilot] vol_mult=2.5, baseline=96, sr_range=2.0%, touch_min=1, lev=10x\n2026-04-29 14:06:18,150   ✅ 注入了 11 个实盘参数: ['vol_signal_mult', 'baseline_candles', 'long_netflow', 'short_netflow', 'long_vol_mult', 'sr_entry_range', 'sr_touch_min', 'breakout_mult', 'short_breakout_mult', 'long_exit_mult', 'short_exit_mult']\n2026-04-29 14:06:18,150 [BTC/USDT] 回测开始: 2016根K线, start=101\n2026-04-29 14:06:19,648 [BTC/USDT] ✅ 入场 short @ 75054.7000 | vol=8.06x | short | L4做空: 压力=75787.0600 距=+0.97% 触=5✅ ✅ | L6做空: 高=75084.3000 当前=75054.7000 跌=0.04%✅>阈值=2.0%\n2026-04-29 14:06:24,806   完成: 1笔交易\n\n============================================================\n  GATE 回测报告 (2026-03-30 ~ 2026-04-29)\n============================================================\n  总交易数:    0（已平仓）\n  未平仓:      1笔（不计入统计）\n  胜率:        0.0%\n  总盈亏:      0.0%\n  平均盈亏:    0.0%\n  平均持仓:    0分钟\n  最大盈利:    0.0%\n  最大亏损:    0.0%\n  S/R入场命中率: 0.0% (0/0)\n  S/R出场命中率: 0.0% (0/0)\n\n  出场分布:\n\n  各币种:\n\n  ⚠️ 未平仓交易 (1笔):\n    BTC/USDT 入场2026-04-17 16:00:00+08:00 @ 75054.7  浮盈+10.51%  持仓3345分钟\n2026-04-29 14:06:24,807 \n结果已保存: /Users/luxiangnan/freqtrade_console/bt_tools/backtest_core/reports/bt_d14e06d7.json\n",
+        "total_pnl": 0.0,
+        "total_trades": 0,
+        "trades": [
+          {
+            "direction": "short",
+            "entry_price": 75054.7,
+            "entry_time": "2026-04-17 16:00:00+08:00",
+            "exit_price": 75847.2,
+            "exit_reason": "TIMEOUT",
+            "exit_time": "2026-04-19 23:45:00+08:00",
+            "holding_minutes": 3345,
+            "is_open": true,
+            "near_sr_entry": true,
+            "near_sr_exit": false,
+            "pair": "BTC/USDT",
+            "pnl_pct": 10.51
+          }
+        ],
+        "win_rate": 0.0,
+        "wins": 0
+      },
+      "status": "done"
+    }
+  },
+  "finished_at": "2026-04-29 14:06:25"
+}

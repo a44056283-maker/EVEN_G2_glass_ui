@@ -1,0 +1,295 @@
+{
+  "started_at": "2026-04-30 05:29:09",
+  "status": "ok_with_issues",
+  "self_heal": [
+    "9099 控制台健康",
+    "已尝试拉起缺失执行代理: [8081, 8082, 8083, 8084]"
+  ],
+  "issues": [
+    {
+      "level": "medium",
+      "where": "l5_market_intel",
+      "message": "L5存在降级/单源覆盖: {'triple': 10, 'single': 1, 'dual': 4}",
+      "round": 1
+    },
+    {
+      "level": "medium",
+      "where": "l5_market_intel",
+      "message": "L5存在降级/单源覆盖: {'triple': 10, 'single': 1, 'dual': 4}",
+      "round": 2
+    },
+    {
+      "level": "medium",
+      "where": "l5_market_intel",
+      "message": "接口延时偏高: 9.384s",
+      "round": 2
+    },
+    {
+      "level": "medium",
+      "where": "l5_market_intel",
+      "message": "L5存在降级/单源覆盖: {'triple': 10, 'single': 1, 'dual': 4}",
+      "round": 3
+    }
+  ],
+  "rounds": [
+    {
+      "round": 1,
+      "started_at": "2026-04-30 05:29:23",
+      "endpoints": {
+        "ai_data_flow": {
+          "ok": true,
+          "latency_s": 0.005,
+          "error": null,
+          "summary": {
+            "ok": true,
+            "pairs": 5,
+            "blank_count": 3,
+            "has_l5_pairs": 5
+          }
+        },
+        "l5_market_intel": {
+          "ok": true,
+          "latency_s": 0.004,
+          "error": null,
+          "validation_levels": {
+            "triple": 10,
+            "single": 1,
+            "dual": 4
+          }
+        },
+        "l5_daily_attribution": {
+          "ok": true,
+          "latency_s": 0.416,
+          "error": null
+        },
+        "l5_evolution": {
+          "ok": true,
+          "latency_s": 0.002,
+          "error": null
+        },
+        "agent_status": {
+          "ok": true,
+          "latency_s": 0.001,
+          "error": null,
+          "agent_count": 12
+        },
+        "backtest_overview": {
+          "ok": true,
+          "latency_s": 0.008,
+          "error": null
+        }
+      },
+      "issues": [
+        {
+          "level": "medium",
+          "where": "l5_market_intel",
+          "message": "L5存在降级/单源覆盖: {'triple': 10, 'single': 1, 'dual': 4}"
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "started_at": "2026-04-30 05:29:44",
+      "endpoints": {
+        "ai_data_flow": {
+          "ok": true,
+          "latency_s": 0.008,
+          "error": null,
+          "summary": {
+            "ok": true,
+            "pairs": 5,
+            "blank_count": 3,
+            "has_l5_pairs": 5
+          }
+        },
+        "l5_market_intel": {
+          "ok": true,
+          "latency_s": 9.384,
+          "error": null,
+          "validation_levels": {
+            "triple": 10,
+            "single": 1,
+            "dual": 4
+          }
+        },
+        "l5_daily_attribution": {
+          "ok": true,
+          "latency_s": 0.003,
+          "error": null
+        },
+        "l5_evolution": {
+          "ok": true,
+          "latency_s": 0.002,
+          "error": null
+        },
+        "agent_status": {
+          "ok": true,
+          "latency_s": 0.003,
+          "error": null,
+          "agent_count": 12
+        },
+        "backtest_overview": {
+          "ok": true,
+          "latency_s": 0.055,
+          "error": null
+        }
+      },
+      "issues": [
+        {
+          "level": "medium",
+          "where": "l5_market_intel",
+          "message": "L5存在降级/单源覆盖: {'triple': 10, 'single': 1, 'dual': 4}"
+        },
+        {
+          "level": "medium",
+          "where": "l5_market_intel",
+          "message": "接口延时偏高: 9.384s"
+        }
+      ]
+    },
+    {
+      "round": 3,
+      "started_at": "2026-04-30 05:30:13",
+      "endpoints": {
+        "ai_data_flow": {
+          "ok": true,
+          "latency_s": 0.007,
+          "error": null,
+          "summary": {
+            "ok": true,
+            "pairs": 5,
+            "blank_count": 3,
+            "has_l5_pairs": 5
+          }
+        },
+        "l5_market_intel": {
+          "ok": true,
+          "latency_s": 6.028,
+          "error": null,
+          "validation_levels": {
+            "triple": 10,
+            "single": 1,
+            "dual": 4
+          }
+        },
+        "l5_daily_attribution": {
+          "ok": true,
+          "latency_s": 0.495,
+          "error": null
+        },
+        "l5_evolution": {
+          "ok": true,
+          "latency_s": 0.005,
+          "error": null
+        },
+        "agent_status": {
+          "ok": true,
+          "latency_s": 0.001,
+          "error": null,
+          "agent_count": 12
+        },
+        "backtest_overview": {
+          "ok": true,
+          "latency_s": 0.009,
+          "error": null
+        }
+      },
+      "issues": [
+        {
+          "level": "medium",
+          "where": "l5_market_intel",
+          "message": "L5存在降级/单源覆盖: {'triple': 10, 'single': 1, 'dual': 4}"
+        }
+      ]
+    }
+  ],
+  "agents": {
+    "registered_count": 12,
+    "registered_ports": [
+      8081,
+      8082,
+      8083,
+      8084,
+      9090,
+      9091,
+      9092,
+      9093,
+      9094,
+      9095,
+      9096,
+      9097
+    ],
+    "unhealthy_command_ports": [],
+    "autopilot_enabled": true
+  },
+  "refresh": {
+    "replay_samples": {
+      "ok": true,
+      "latency_s": 0.579,
+      "error": null,
+      "materialized": 1391
+    },
+    "param_registry": {
+      "ok": true,
+      "latency_s": 0.029,
+      "error": null,
+      "count": 105,
+      "refreshed": true
+    }
+  },
+  "backtest": {
+    "start_ok": true,
+    "start_latency_s": 0.001,
+    "error": null,
+    "payload": {
+      "exchange": "gateio",
+      "pair": "BTC/USDT",
+      "days": 30,
+      "timeframe": "15m"
+    },
+    "job_id": "baaefab2",
+    "final_status": {
+      "detail": "✅ 回测完成",
+      "done": true,
+      "elapsed_s": 4.2,
+      "error": null,
+      "job_id": "baaefab2",
+      "progress": 100,
+      "results": {
+        "avg_pnl": 10.51,
+        "exit_reason_dist": {
+          "END_OF_DATA": 1
+        },
+        "losses": 0,
+        "max_drawdown": 0.0,
+        "open_trades": 0,
+        "result_file": "/Users/luxiangnan/freqtrade_console/bt_tools/backtest_core/reports/bt_baaefab2.json",
+        "sharpe_ratio": "-",
+        "source": "subprocess_run_backtest",
+        "stdout_tail": "2026-04-30 05:30:20,710   ✅ 加载参数: runtime_params_v61_gate_17656685222.json\n2026-04-30 05:30:20,711   ✅ 加载参数: runtime_params_v61_okx_9095.json\n2026-04-30 05:30:20,711 \n============================================================\n2026-04-30 05:30:20,711 回测: BTC/USDT (gateio)\n2026-04-30 05:30:20,711 参数来源: runtime:gate\n2026-04-30 05:30:20,711 参数: vol_mult=5.0, sr_range=1.0%, p1=15%, p2=25%, p3=35%\n2026-04-30 05:30:20,711 ============================================================\n2026-04-30 05:30:20,751   ✅ 加载 BTC/USDT 15m: 8640根\n2026-04-30 05:30:20,752   ✅ 加载 BTC/USDT 1h: 2160根\n2026-04-30 05:30:20,752   ✅ 加载 BTC/USDT 4h: 540根\n2026-04-30 05:30:20,753 [BacktestAutopilot] vol_mult=2.5, baseline=96, sr_range=2.0%, touch_min=1, lev=10x\n2026-04-30 05:30:20,754   ✅ 注入了 14 个实盘参数: ['vol_signal_mult', 'baseline_candles', 'long_netflow', 'short_netflow', 'long_vol_mult', 'sr_entry_range', 'sr_touch_min', 'breakout_mult', 'short_breakout_mult', 'base_exit_p1_profit', 'base_exit_p2_profit', 'base_exit_p3_profit', 'long_exit_mult', 'short_exit_mult']\n2026-04-30 05:30:20,754 [BTC/USDT] 回测开始: 1920根K线, start=101\n2026-04-30 05:30:21,008 [BTC/USDT] ✅ 入场 short @ 75054.7000 | vol=8.06x | short | L4做空: 压力=75787.0600 距=+0.97% 触=5✅ ✅ | L6做空: 高=75084.3000 当前=75054.7000 跌=0.04%✅>阈值=2.0%\n2026-04-30 05:30:22,271   完成: 1笔交易\n\n============================================================\n  GATE 回测报告 (2026-03-31 ~ 2026-04-30)\n============================================================\n  总交易数:    1（已平仓）\n  胜率:        100.0%\n  总盈亏:      10.51%\n  平均盈亏:    10.51%\n  平均持仓:    3345分钟\n  最大盈利:    10.51%\n  最大亏损:    10.51%\n  S/R入场命中率: 100.0% (1/1)\n  S/R出场命中率: 0.0% (0/1)\n\n  出场分布:\n    END_OF_DATA: 1 (100.0%)\n\n  各币种:\n    BTC/USDT           1笔  胜率100.0%  均盈亏  10.51%\n2026-04-30 05:30:22,272 \n结果已保存: /Users/luxiangnan/freqtrade_console/bt_tools/backtest_core/reports/bt_baaefab2.json\n",
+        "total_pnl": 10.51,
+        "total_trades": 1,
+        "trades": [
+          {
+            "direction": "short",
+            "entry_price": 75054.7,
+            "entry_time": "2026-04-17 16:00:00+08:00",
+            "exit_price": 75847.2,
+            "exit_reason": "END_OF_DATA",
+            "exit_time": "2026-04-19 23:45:00+08:00",
+            "holding_minutes": 3345,
+            "is_open": false,
+            "near_sr_entry": true,
+            "near_sr_exit": false,
+            "pair": "BTC/USDT",
+            "pnl_pct": 10.51
+          }
+        ],
+        "win_rate": 1.0,
+        "wins": 1
+      },
+      "status": "done"
+    }
+  },
+  "finished_at": "2026-04-30 05:30:24"
+}

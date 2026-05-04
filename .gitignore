@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.env.*
+*.log
+.DS_Store
+*.ehpk
+out.ehpk
+*.zip
+!docs/gpt-advisor/bundles/*.zip

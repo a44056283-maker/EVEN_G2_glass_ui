@@ -1,0 +1,208 @@
+{
+  "symbol": "BTCUSDT",
+  "timestamp": "2026-04-03T23:25:09.716036",
+  "timeframes": {
+    "1m": {
+      "klines_count": 200,
+      "fractals_count": 54,
+      "strokes_count": 32,
+      "centers_count": 4,
+      "last_stroke": {
+        "type": "down",
+        "start_index": 127,
+        "end_index": 129,
+        "start_price": 66906.82,
+        "end_price": 66875.09,
+        "amplitude": 31.730000000010477,
+        "high": 66906.82,
+        "low": 66875.09
+      },
+      "last_center": {
+        "type": "down",
+        "start_stroke": 22,
+        "end_stroke": 24,
+        "high": 66990.59,
+        "low": 66814.56,
+        "range": 176.02999999999884,
+        "direction": "down"
+      },
+      "wyckoff_phase": "range",
+      "spring": null,
+      "sos": false,
+      "volume_profile": {
+        "total_volume": 140.67567,
+        "up_volume": 108.51066,
+        "down_volume": 32.16501,
+        "up_ratio": 0.7713534259335676,
+        "avg_volume": 7.0337835,
+        "avg_quote": 470738.964466995,
+        "taker_buy_ratio": 0.7311367345895705
+      },
+      "current_price": 66928.64,
+      "price_change_24h": -0.011144957653652367
+    },
+    "5m": {
+      "klines_count": 200,
+      "fractals_count": 69,
+      "strokes_count": 36,
+      "centers_count": 2,
+      "last_stroke": {
+        "type": "up",
+        "start_index": 140,
+        "end_index": 142,
+        "start_price": 66915.59,
+        "end_price": 67028.37,
+        "amplitude": 112.77999999999884,
+        "high": 67028.37,
+        "low": 66915.59
+      },
+      "last_center": {
+        "type": "down",
+        "start_stroke": 21,
+        "end_stroke": 23,
+        "high": 67288.0,
+        "low": 66674.72,
+        "range": 613.2799999999988,
+        "direction": "down"
+      },
+      "wyckoff_phase": "range",
+      "spring": null,
+      "sos": false,
+      "volume_profile": {
+        "total_volume": 766.92674,
+        "up_volume": 554.9473,
+        "down_volume": 211.97943999999998,
+        "up_ratio": 0.723598840744554,
+        "avg_volume": 38.346337,
+        "avg_quote": 2562520.6125479,
+        "taker_buy_ratio": 0.6609746192967532
+      },
+      "current_price": 66928.64,
+      "price_change_24h": 0.4529706046392159
+    },
+    "15m": {
+      "klines_count": 200,
+      "fractals_count": 59,
+      "strokes_count": 34,
+      "centers_count": 0,
+      "last_stroke": {
+        "type": "up",
+        "start_index": 135,
+        "end_index": 138,
+        "start_price": 66508.1,
+        "end_price": 67028.37,
+        "amplitude": 520.2699999999895,
+        "high": 67028.37,
+        "low": 66508.1
+      },
+      "last_center": null,
+      "wyckoff_phase": "range",
+      "spring": null,
+      "sos": false,
+      "volume_profile": {
+        "total_volume": 2366.5424,
+        "up_volume": 1114.24451,
+        "down_volume": 1252.29789,
+        "up_ratio": 0.4708322614460658,
+        "avg_volume": 118.32712,
+        "avg_quote": 7910349.00721889,
+        "taker_buy_ratio": 0.5776293169308946
+      },
+      "current_price": 66928.65,
+      "price_change_24h": 0.03953532170839986
+    },
+    "1h": {
+      "klines_count": 200,
+      "fractals_count": 65,
+      "strokes_count": 40,
+      "centers_count": 2,
+      "last_stroke": {
+        "type": "down",
+        "start_index": 136,
+        "end_index": 138,
+        "start_price": 67288.0,
+        "end_price": 66674.72,
+        "amplitude": 613.2799999999988,
+        "high": 67288.0,
+        "low": 66674.72
+      },
+      "last_center": {
+        "type": "down",
+        "start_stroke": 29,
+        "end_stroke": 31,
+        "high": 69171.77,
+        "low": 66217.07,
+        "range": 2954.699999999997,
+        "direction": "down"
+      },
+      "wyckoff_phase": "range",
+      "spring": null,
+      "sos": false,
+      "volume_profile": {
+        "total_volume": 9921.38492,
+        "up_volume": 3945.53752,
+        "down_volume": 5975.8474,
+        "up_ratio": 0.3976801174245742,
+        "avg_volume": 496.069246,
+        "avg_quote": 33137558.95673523,
+        "taker_buy_ratio": 0.48161337741949034
+      },
+      "current_price": 66928.65,
+      "price_change_24h": -0.24919574012403395
+    },
+    "4h": {
+      "klines_count": 200,
+      "fractals_count": 58,
+      "strokes_count": 29,
+      "centers_count": 3,
+      "last_stroke": {
+        "type": "down",
+        "start_index": 137,
+        "end_index": 140,
+        "start_price": 69171.77,
+        "end_price": 66167.1,
+        "amplitude": 3004.6699999999983,
+        "high": 69171.77,
+        "low": 66167.1
+      },
+      "last_center": {
+        "type": "up",
+        "start_stroke": 9,
+        "end_stroke": 11,
+        "high": 76000.0,
+        "low": 70500.0,
+        "range": 5500.0,
+        "direction": "up"
+      },
+      "wyckoff_phase": "range",
+      "spring": null,
+      "sos": false,
+      "volume_profile": {
+        "total_volume": 63062.83453,
+        "up_volume": 37562.7517,
+        "down_volume": 25500.08283,
+        "up_ratio": 0.5956400783433038,
+        "avg_volume": 3153.1417265,
+        "avg_quote": 212571374.93698886,
+        "taker_buy_ratio": 0.49798372375825395
+      },
+      "current_price": 66928.65,
+      "price_change_24h": 0.5688951398233227
+    }
+  },
+  "match": {
+    "matched": true,
+    "similarity": 0.55,
+    "pattern_type": "短线下降",
+    "prediction": {
+      "direction": "观望",
+      "confidence": 45,
+      "expected_duration": "几小时-1天",
+      "stop_loss": "前高+1%",
+      "take_profit": "观望",
+      "leverage": "不做",
+      "position_pct": 0
+    },
+    "source": "无中枢震荡 + 下降笔"
+  }
+}

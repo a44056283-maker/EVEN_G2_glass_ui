@@ -1,0 +1,30 @@
+{
+  "name": "@g2vva/api-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.1",
+    "@fastify/websocket": "^11.2.0",
+    "@g2vva/asr-adapter": "0.1.0",
+    "@g2vva/memory-adapter": "0.1.0",
+    "@g2vva/minimax-adapter": "0.1.0",
+    "@g2vva/shared": "0.1.0",
+    "@g2vva/trading-adapter": "0.1.0",
+    "@g2vva/vision-adapter": "0.1.0",
+    "dotenv": "^16.4.7",
+    "fastify": "^5.2.1",
+    "ws": "^8.20.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  }
+}

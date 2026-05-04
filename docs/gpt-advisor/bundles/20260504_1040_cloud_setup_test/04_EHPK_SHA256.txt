@@ -1,0 +1,5 @@
+# EHPK SHA256
+
+8772cc4d634d0915f41d6a8c05bda022114bec5188d467f8530d88eb1c62014d  /Users/luxiangnan/Desktop/EVEN G2视觉和语音对讲系统/g2-vision-voice-assistant/apps/evenhub-plugin/g2-vision-voice-assistant.ehpk
+a64ccac5bc9b6d6a72584dd40d4a7e52e0f424531ec7f1827db659c38c39f335  /Users/luxiangnan/Desktop/EVEN G2视觉和语音对讲系统/g2-vision-voice-assistant/apps/evenhub-plugin/out.ehpk
+da8aa31b0428185ee97573ed731ce24b5c97b476a646d5eab7c13d7876f61d70  /Users/luxiangnan/Desktop/EVEN G2视觉和语音对讲系统/g2-vision-voice-assistant/apps/evenhub-plugin/g2-视觉-语音助手.ehpk

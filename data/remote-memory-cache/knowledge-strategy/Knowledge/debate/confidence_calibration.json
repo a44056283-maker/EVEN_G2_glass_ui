@@ -1,0 +1,16 @@
+{
+  "thresholds": {
+    "STRONG_BUY": 0.8,
+    "BUY": 0.6,
+    "HOLD": 0.4,
+    "SELL": 0.6,
+    "STRONG_SELL": 0.8
+  },
+  "evidence_weights": {
+    "TechAnalyst": 0.4,
+    "RiskAnalyst": 0.4,
+    "DebateAgent": 0.1,
+    "JudgeAgent": 0.1
+  },
+  "calibration_data": []
+}
