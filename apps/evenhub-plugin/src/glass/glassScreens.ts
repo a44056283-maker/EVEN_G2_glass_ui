@@ -557,7 +557,16 @@ function formatWhitelistPrices(prices: Array<{ symbol: string; price: number }>)
   for (const sym of whitelist) {
     const price = map.get(sym)
     if (price == null) continue
-    const short = price >= 10000 ? `${Math.round(price / 1000)}k` : price < 1 ? price.toFixed(4) : Math.round(price).toString()
+    let short: string
+    if (sym === 'DOGE') {
+      short = price.toFixed(4)
+    } else if (price >= 10000) {
+      short = `${Math.round(price / 1000)}k`
+    } else if (price < 1) {
+      short = price.toFixed(4)
+    } else {
+      short = Math.round(price).toString()
+    }
     parts.push(`${sym}${short}`)
   }
   return parts.join(' ')
