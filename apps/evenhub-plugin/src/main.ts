@@ -180,6 +180,27 @@ function startGlassOperation(): number {
 function isGlassOperationValid(id: number): boolean {
   return id === glassOperationId
 }
+/** 取消当前眼镜端异步操作，清空状态并可选显示提示 */
+async function cancelCurrentGlassOperation(reason: string): Promise<void> {
+  const bridge = getBridge()
+  const renderer = createGlassRenderer(bridge)
+  console.info('[P0 vision] operation cancelled:', reason)
+  // 使当前 session 失效，阻止旧结果回写
+  startGlassOperation()
+  pendingCapturedImage = undefined
+  uploadInFlight = false
+  pendingVisionPrompt = ''
+  const prevState = visionState
+  visionState = 'idle'
+  activeGlassPage = 'home'
+  // 如果当时正在 preparing/uploading，取消后返回首页
+  if (prevState === 'preparing' || prevState === 'uploading') {
+    await safeGlassShow(renderer, 'home')
+    await renderG2Bookmark()
+  }
+  setInteractionFeedback(`已取消：${reason}`)
+  renderR1CameraDebug()
+}
 let voicePageState: VoiceDebugState['voicePageState'] = 'idle'
 let pendingCapturedImage: CapturedImage | undefined
 let lastR1InputSummary = 'none'
@@ -243,7 +264,11 @@ async function main(): Promise<void> {
   const handleManualImageInput = (event: Event): void => {
     if (isFileInputRequestActive()) return
     const file = (event.currentTarget as HTMLInputElement | null)?.files?.[0]
-    if (!file) return
+    if (!file) {
+      // 文件选择取消或没有选择文件，取消当前眼镜操作
+      void cancelCurrentGlassOperation('file-input-cancelled')
+      return
+    }
     void unlockAudioPlayback()
     const source = (event.currentTarget as HTMLInputElement | null)?.id === 'album-fallback' ? 'web-album' : 'web-camera'
     void handleManualImageFile(file, source)
@@ -3513,12 +3538,17 @@ async function handleVisionR1Intent(intent: 'click' | 'double_click' | 'next' | 
   const bridge = getBridge()
   const renderer = createGlassRenderer(bridge)
 
+  // preparing/uploading 状态下：R1 next/double_click/click 均可取消并返回
   if (visionState === 'preparing' || visionState === 'uploading') {
-    if (intent === 'click' || intent === 'double_click') {
-      await returnFromVisionToHome()
+    if (intent === 'next' || intent === 'double_click' || intent === 'click') {
+      await cancelCurrentGlassOperation(visionState === 'preparing' ? '相机准备中取消' : '上传中取消')
       return
     }
-    setVoiceStatus(visionState === 'preparing' ? '相机正在准备中，请稍候，单击返回。' : '图片正在发送中，请稍候，单击返回。')
+    // R1 previous 在 preparing/uploading 时也取消
+    if (intent === 'previous') {
+      await cancelCurrentGlassOperation('R1 上滑取消')
+      return
+    }
     return
   }
 
