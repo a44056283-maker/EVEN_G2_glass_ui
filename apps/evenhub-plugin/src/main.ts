@@ -170,6 +170,16 @@ let g2BookmarkIndex = 0
 let phoneActiveBookmarkId: PhoneBookmarkId = 'vision'
 let visionState: VisionState = 'idle'
 let activeGlassPage: 'home' | 'vision' | 'voice' | 'trading' | 'settings' | 'diagnostics' = 'home'
+/** 眼镜端异步操作 session ID，用于防止旧操作结果覆盖新页面状态 */
+let glassOperationId = 0
+/** 生成新的 session ID 并返回，用于标记当前异步操作的合法性 */
+function startGlassOperation(): number {
+  return ++glassOperationId
+}
+/** 检查给定的 session ID 是否仍然是当前最新操作，否者说明页面已切换应忽略 */
+function isGlassOperationValid(id: number): boolean {
+  return id === glassOperationId
+}
 let voicePageState: VoiceDebugState['voicePageState'] = 'idle'
 let pendingCapturedImage: CapturedImage | undefined
 let lastR1InputSummary = 'none'
@@ -921,6 +931,7 @@ async function runCaptureFlow(prompt?: string, preparedImage?: CapturedImage, op
   const button = document.querySelector<HTMLButtonElement>('#capture-button')
   const requestStartedAt = performance.now()
   const effectivePrompt = (prompt ?? getVisionQuestionInput()).trim()
+  const opId = startGlassOperation() // 标记本次操作，异步回调需检查 session 合法性
 
   try {
     stopAutoVoiceDetection()
@@ -998,13 +1009,14 @@ async function runCaptureFlow(prompt?: string, preparedImage?: CapturedImage, op
 
     await speakIfEnabled(result.answer, true)
     finishFlow('完成', 100)
-    visionState = 'result'
+    if (isGlassOperationValid(opId)) visionState = 'result'
   } catch (error) {
+    if (!isGlassOperationValid(opId)) return // session 已失效，忽略旧结果
     const message = formatVisionError(error)
     failFlow(message)
     setVisionResultPanel('失败', '视觉识别未完成', message)
     await safeGlassShow(renderer, 'error', { body: message })
-    visionState = 'error'
+    if (isGlassOperationValid(opId)) visionState = 'error'
   } finally {
     button?.removeAttribute('disabled')
     if (!pendingVisionPrompt) hideConfirmCameraButton()
@@ -1015,10 +1027,12 @@ async function runCaptureFlow(prompt?: string, preparedImage?: CapturedImage, op
 async function handleManualImageFile(file: File, source: 'web-album' | 'web-camera'): Promise<void> {
   const renderer = createGlassRenderer(getBridge())
   const sourceName = source === 'web-album' ? '相册选图' : '手机拍照'
+  const opId = startGlassOperation()
   try {
+    if (!isGlassOperationValid(opId)) return
     selectG2Bookmark('vision')
     activeGlassPage = 'vision'
-    visionState = 'preparing'
+    if (isGlassOperationValid(opId)) visionState = 'preparing'
     lastVisionError = ''
     pendingCapturedImage = undefined
     uploadInFlight = false
@@ -1030,6 +1044,7 @@ async function handleManualImageFile(file: File, source: 'web-album' | 'web-came
     )
     await safeGlassShow(renderer, 'vision_uploading')
     const image = await imageFileToCapturedImage(file)
+    if (!isGlassOperationValid(opId)) return
     const imageBytes = estimateBase64Bytes(image.imageBase64)
     if (!image.imageBase64 || imageBytes <= 0) throw new Error('没有获取到图片，请重新拍照或重新选图。')
     lastCaptureAt = new Date().toLocaleTimeString('zh-CN')
@@ -1043,7 +1058,8 @@ async function handleManualImageFile(file: File, source: 'web-album' | 'web-came
     )
     await runCaptureFlow(undefined, image, { source })
   } catch (error) {
-    visionState = 'error'
+    if (!isGlassOperationValid(opId)) return
+    if (isGlassOperationValid(opId)) visionState = 'error'
     const message = formatVisionError(error)
     lastVisionError = message
     setInteractionFeedback(`${sourceName}：失败`)
@@ -1740,7 +1756,10 @@ async function routeVoiceIntent(text: string): Promise<void> {
 async function handleVisionVoiceIntent(text: string): Promise<void> {
   const bridge = getBridge()
   const renderer = createGlassRenderer(bridge)
+  const opId = startGlassOperation()
+  if (!isGlassOperationValid(opId)) return
   await renderer.show('voice_to_vision')
+  if (!isGlassOperationValid(opId)) return
 
   if (lastVisionSummary && isRecentVisionReference(text)) {
     const answer = `基于最近视觉结果：${lastVisionSummary}`
@@ -1780,9 +1799,12 @@ async function handleVisionVoiceIntent(text: string): Promise<void> {
 async function handleTradingVoiceIntent(text: string): Promise<void> {
   const bridge = getBridge()
   const renderer = createGlassRenderer(bridge)
+  const opId = startGlassOperation()
+  if (!isGlassOperationValid(opId)) return
   setVoiceStatus('正在读取实时交易只读数据...')
   setVoiceTranscript(`你：${text}\n天禄：正在读取实时交易状态`)
   await renderer.show('voice_transcript', { transcript: text })
+  if (!isGlassOperationValid(opId)) return
 
   try {
     // 根据关键词路由到对应子页面
