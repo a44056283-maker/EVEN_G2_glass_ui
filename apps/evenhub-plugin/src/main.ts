@@ -907,17 +907,17 @@ async function handleG2ControlEvent(event: EvenHubEvent): Promise<void> {
     }
     if (intent === 'next') {
       tradingSubPageIndex = (tradingSubPageIndex + 1) % 6
-      await showTradingSubPage(tradingSubPageIndex, renderer)
+      await renderer.show('trading_menu', { activeIndex: tradingSubPageIndex })
       return
     }
     if (intent === 'previous') {
       tradingSubPageIndex = (tradingSubPageIndex - 1 + 6) % 6
-      await showTradingSubPage(tradingSubPageIndex, renderer)
+      await renderer.show('trading_menu', { activeIndex: tradingSubPageIndex })
       return
     }
     if (intent === 'click') {
-      inTradingMenu = true
-      await renderer.show('trading_menu', { activeIndex: tradingSubPageIndex })
+      inTradingMenu = false
+      await showTradingSubPage(tradingSubPageIndex, renderer)
       return
     }
     return
@@ -1036,7 +1036,12 @@ async function runCaptureFlow(prompt?: string, preparedImage?: CapturedImage, op
     finishFlow('完成', 100)
     if (isGlassOperationValid(opId)) visionState = 'result'
   } catch (error) {
-    if (!isGlassOperationValid(opId)) return // session 已失效，忽略旧结果
+    if (!isGlassOperationValid(opId)) {
+      // session 已被取消操作重置，仍返回首页避免 G2 停留中间状态
+      activeGlassPage = 'home'
+      await safeGlassShow(renderer, 'home')
+      return
+    }
     const message = formatVisionError(error)
     failFlow(message)
     setVisionResultPanel('失败', '视觉识别未完成', message)
@@ -1977,7 +1982,7 @@ function normalizeTianluTranscript(transcript: string): string {
 }
 
 function isVisionVoiceIntent(text: string): boolean {
-  return /看看|看一看|看一下|帮我看看|帮我看一下|这是什么|识别一下|拍一下|拍照|读一下|读这段|屏幕内容|菜单|图片内容|前面是什么|看看屏幕|看看前面/.test(text)
+  return /看(一下|一看|瞧|瞧一下|瞧一瞧|瞅|瞅一下|瞅一瞅|这个|这里|前面)|帮我(看看|看一下|瞧一下)|这是什么(呀|啥|东西)?|识别(一下|这个)?|拍一下|拍照|读(一下|这段)|屏幕内容|菜单|图片内容|前面是什么|看看屏幕|看看前面/.test(text)
 }
 
 function isRecentVisionReference(text: string): boolean {
