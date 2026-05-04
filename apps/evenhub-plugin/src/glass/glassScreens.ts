@@ -338,9 +338,10 @@ export function renderVoiceTranscript(state: GlassScreenState): string {
 
 export function renderTradingStatus(state: GlassScreenState): string {
   const trading = state.trading
+  const priceStrip = state.extendedData?.prices ? formatWhitelistPrices(state.extendedData.prices) : undefined
   if (!trading) {
     return [
-      topBar(state.time, state.battery, '交易状态'),
+      topBar(state.time, undefined, '交易状态', priceStrip),
       '',
       center('正在读取交易只读状态'),
       '',
@@ -349,7 +350,7 @@ export function renderTradingStatus(state: GlassScreenState): string {
   }
 
   return [
-    topBar(state.time, state.battery),
+    topBar(state.time, undefined, undefined, priceStrip),
     center(`运行${trading.online === false ? '需关注' : '正常'}`),
     leftRight('心跳', compactForG2(trading.heartbeat ?? '--', 10)),
     leftRight('策略', compactForG2(String(trading.strategy ?? '--'), 10)),
@@ -376,7 +377,7 @@ export function renderTradingMenu(state: GlassScreenState): string {
   const row1 = centerTabRow(tabs1)
   const row2 = centerTabRow(tabs2)
   return [
-    topBar(state.time, state.battery),
+    topBar(state.time, undefined, undefined, state.extendedData?.prices ? formatWhitelistPrices(state.extendedData.prices) : undefined),
     '',
     row1,
     row2,
@@ -387,9 +388,10 @@ export function renderTradingMenu(state: GlassScreenState): string {
 
 export function renderTradingPrices(state: GlassScreenState): string {
   const prices = state.extendedData?.prices ?? []
+  const priceStrip = prices.length ? formatWhitelistPrices(prices) : undefined
   const rows = prices.slice(0, 5)
   return [
-    topBar(state.time, state.battery),
+    topBar(state.time, undefined, undefined, priceStrip),
     ...rows.map((p) => centerTabRow([`${p.symbol}`, `$${p.price.toFixed(p.price < 1 ? 4 : 2)}`])),
     ...Array(Math.max(0, 5 - rows.length)).fill(''),
     '',
@@ -403,8 +405,9 @@ export function renderTradingPositions(state: GlassScreenState): string {
   const openPos = state.extendedData?.openPositions ?? 0
   const rows = positions.slice(0, 4)
   const pnlSummary = totalPnl != null ? `${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)}` : '--'
+  const priceStrip = state.extendedData?.prices ? formatWhitelistPrices(state.extendedData.prices) : undefined
   return [
-    topBar(state.time, state.battery),
+    topBar(state.time, undefined, undefined, priceStrip),
     center(`持仓 ${openPos} 个 · ${pnlSummary}`),
     ...rows.map((p) => {
       const pnlStr = p.pnl != null ? `${p.pnl >= 0 ? '+' : ''}${p.pnl.toFixed(2)}` : '--'
@@ -419,8 +422,9 @@ export function renderTradingPositions(state: GlassScreenState): string {
 export function renderTradingDistribution(state: GlassScreenState): string {
   const dist = state.extendedData?.distribution ?? []
   const rows = dist.slice(0, 5)
+  const priceStrip = state.extendedData?.prices ? formatWhitelistPrices(state.extendedData.prices) : undefined
   return [
-    topBar(state.time, state.battery),
+    topBar(state.time, undefined, undefined, priceStrip),
     ...rows.map((d) => {
       const pct = `${d.share.toFixed(1)}%`
       const pnlStr = d.pnl != null ? `${d.pnl >= 0 ? '+' : ''}$${d.pnl.toFixed(0)}` : ''
@@ -434,12 +438,13 @@ export function renderTradingDistribution(state: GlassScreenState): string {
 
 export function renderTradingAttribution(state: GlassScreenState): string {
   const attr = state.extendedData?.attribution
+  const priceStrip = state.extendedData?.prices ? formatWhitelistPrices(state.extendedData.prices) : undefined
   const winRate = attr?.winRatePct != null ? `${attr.winRatePct.toFixed(1)}%` : '--'
   const avgReal = attr?.avgRealizedPnlPct != null ? `${attr.avgRealizedPnlPct >= 0 ? '+' : ''}${attr.avgRealizedPnlPct.toFixed(2)}%` : '--'
   const avgUnreal = attr?.avgUnrealizedPnlPct != null ? `${attr.avgUnrealizedPnlPct >= 0 ? '+' : ''}${attr.avgUnrealizedPnlPct.toFixed(2)}%` : '--'
   const samples = attr?.sampleCount ?? '--'
   return [
-    topBar(state.time, state.battery),
+    topBar(state.time, undefined, undefined, priceStrip),
     centerTabRow([`胜率 ${winRate}`, `均盈 ${avgReal}`, `均亏 ${avgUnreal}`]),
     center(`样本 ${samples} 单`),
     '',
@@ -451,8 +456,9 @@ export function renderTradingAttribution(state: GlassScreenState): string {
 export function renderTradingAlerts(state: GlassScreenState): string {
   const alerts = state.extendedData?.alerts ?? []
   const rows = alerts.slice(0, 4)
+  const priceStrip = state.extendedData?.prices ? formatWhitelistPrices(state.extendedData.prices) : undefined
   return [
-    topBar(state.time, state.battery),
+    topBar(state.time, undefined, undefined, priceStrip),
     ...rows.map((a) => {
       const level = a.level === 'critical' || a.level === 'high' ? '!' : a.level === 'medium' ? '~' : '-'
       return center(`${level}  ${compactForG2(a.message || '无告警', 38)}`)
@@ -465,8 +471,9 @@ export function renderTradingAlerts(state: GlassScreenState): string {
 
 export function renderRiskAlert(state: GlassScreenState): string {
   const lines = splitShort(state.body || state.status || '当前无重大告警，仓位风险正常。', 5)
+  const priceStrip = state.extendedData?.prices ? formatWhitelistPrices(state.extendedData.prices) : undefined
   return [
-    topBar(state.time, state.battery),
+    topBar(state.time, undefined, undefined, priceStrip),
     ...lines.map((line) => center(line)),
     '',
     center('↑↓ 返回   单击进入'),
@@ -534,12 +541,26 @@ export function renderError(state: GlassScreenState): string {
   ].join('\n')
 }
 
-function topBar(timeText?: string, batteryText?: string, title?: string): string {
+function topBar(timeText?: string, batteryText?: string, title?: string, priceStrip?: string): string {
   const time = (timeText || currentTime()).slice(0, 5)
-  const batt = (batteryText || '').slice(0, 9)
-  const line = (time + ' '.repeat(WIDTH - time.length - batt.length) + batt).padEnd(WIDTH)
+  let right = batteryText ? (batteryText || '').slice(0, 9) : ''
+  if (priceStrip) right = priceStrip
+  const line = (time + ' '.repeat(WIDTH - time.length - right.length) + right).padEnd(WIDTH)
   if (!title) return line
   return `${line}\n${center(title)}`
+}
+
+function formatWhitelistPrices(prices: Array<{ symbol: string; price: number }>): string {
+  const whitelist = ['BTC', 'ETH', 'SOL', 'BNB', 'DOGE']
+  const map = new Map(prices.map((p) => [p.symbol, p.price]))
+  const parts: string[] = []
+  for (const sym of whitelist) {
+    const price = map.get(sym)
+    if (price == null) continue
+    const short = price >= 10000 ? `${Math.round(price / 1000)}k` : price < 1 ? price.toFixed(4) : Math.round(price).toString()
+    parts.push(`${sym}${short}`)
+  }
+  return parts.join(' ')
 }
 
 function center(value: string): string {
