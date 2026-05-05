@@ -46,7 +46,7 @@ export async function startGlassMicProbe(options: GlassMicProbeOptions): Promise
   let timer: number | undefined
   const mode = options.mode ?? 'probe'
 
-  await renderer.show('voice_mic_probe', {
+  await safeShow(renderer, 'voice_mic_probe', {
     pcmBytes: totalBytes,
     chunks,
     lastChunkBytes,
@@ -124,16 +124,16 @@ export async function startGlassMicProbe(options: GlassMicProbeOptions): Promise
       }
       if (data.type === 'final_transcript' && data.text) {
         options.onTranscript?.(data.text)
-        void renderer.show('voice_transcript', { body: data.text })
+        void safeShow(renderer, 'voice_transcript', { body: data.text })
       }
       if (data.type === 'answer' && data.text) {
         options.onAnswer?.(data.text)
-        void renderer.show('reply', { title: '天禄回复', body: data.text })
+        void safeShow(renderer, 'reply', { title: '天禄回复', body: data.text })
       }
       if (data.type === 'error' && data.text) {
         lastVoiceError = data.text
         options.onStatus?.(data.text)
-        void renderer.show('error', { title: '语音错误', body: data.text })
+        void safeShow(renderer, 'error', { title: '语音错误', body: data.text })
         publishDebug()
       }
     } catch {}
@@ -162,7 +162,7 @@ export async function startGlassMicProbe(options: GlassMicProbeOptions): Promise
   } catch (error) {
     audioControlError = error instanceof Error ? error.message : String(error)
     lastVoiceError = audioControlError
-    await renderer.show('error', { title: 'G2 麦克风启动失败', body: audioControlError })
+    await safeShow(renderer, 'error', { title: 'G2 麦克风启动失败', body: audioControlError })
     options.onStatus?.(`G2 麦克风启动失败：${audioControlError}`)
     publishDebug()
     throw error
@@ -172,7 +172,7 @@ export async function startGlassMicProbe(options: GlassMicProbeOptions): Promise
   window.setTimeout(() => {
     if (!closed && totalBytes === 0) {
       noPcmTimeout = true
-      void renderer.show('voice_no_pcm', { reason: '5 秒内 totalBytes 仍为 0' })
+      void safeShow(renderer, 'voice_no_pcm', { reason: '5 秒内 totalBytes 仍为 0' })
       options.onStatus?.('5 秒内没有收到 G2 PCM。')
       publishDebug()
     }
@@ -187,6 +187,18 @@ export async function startGlassMicProbe(options: GlassMicProbeOptions): Promise
       await bridge.audioControl(false)
     } catch {}
     ws.close()
+  }
+}
+
+async function safeShow(
+  renderer: GlassRenderer,
+  screen: Parameters<GlassRenderer['show']>[0],
+  state?: Parameters<GlassRenderer['show']>[1],
+): Promise<void> {
+  try {
+    await renderer.show(screen, state)
+  } catch (error) {
+    console.warn('[G2 MicProbe] glass show failed', error)
   }
 }
 

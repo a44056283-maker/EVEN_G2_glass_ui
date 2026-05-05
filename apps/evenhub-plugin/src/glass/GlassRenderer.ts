@@ -112,19 +112,26 @@ export class GlassRenderer {
   }
 
   private async updatePreviewImage(containerID: number, containerName: string, imageBase64: string): Promise<void> {
-    const rawResult = await this.tryUpdatePreviewImage(containerID, containerName, imageBase64)
-    if (rawResult.ok) return
+    const bytes = base64ToBytes(imageBase64)
+    if (bytes.byteLength > 0) {
+      const bytesResult = await this.tryUpdatePreviewImage(containerID, containerName, bytes)
+      if (bytesResult.ok) return
+    }
 
-    const dataUrlResult = await this.tryUpdatePreviewImage(containerID, containerName, `data:image/jpeg;base64,${imageBase64}`)
+    const base64Result = await this.tryUpdatePreviewImage(containerID, containerName, imageBase64)
+    if (base64Result.ok) return
+
+    const dataUrl = imageBase64.startsWith('data:') ? imageBase64 : `data:image/jpeg;base64,${imageBase64}`
+    const dataUrlResult = await this.tryUpdatePreviewImage(containerID, containerName, dataUrl)
     if (dataUrlResult.ok) return
 
-    throw new Error(`G2 image preview failed: base64=${rawResult.result}; dataUrl=${dataUrlResult.result}`)
+    throw new Error(`G2 image preview failed: bytes=${bytes.byteLength}; base64=${base64Result.result}; dataUrl=${dataUrlResult.result}`)
   }
 
   private async tryUpdatePreviewImage(
     containerID: number,
     containerName: string,
-    imageData: string,
+    imageData: string | Uint8Array,
   ): Promise<{ ok: boolean; result: unknown }> {
     const result = await this.bridge!.updateImageRawData(new ImageRawDataUpdate({
       containerID,
@@ -168,5 +175,17 @@ export class GlassRenderer {
   private publishDebug(content: string): void {
     this.currentContent = content
     this.onDebug?.(content)
+  }
+}
+
+function base64ToBytes(value: string): Uint8Array {
+  const clean = value.includes(',') ? value.slice(value.indexOf(',') + 1) : value
+  try {
+    const binary = atob(clean)
+    const bytes = new Uint8Array(binary.length)
+    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i)
+    return bytes
+  } catch {
+    return new Uint8Array()
   }
 }

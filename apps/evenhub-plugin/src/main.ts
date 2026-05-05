@@ -240,6 +240,7 @@ let voiceProbeDebug: VoiceDebugState = {
 const deviceKindBySn = new Map<string, 'glasses' | 'ring'>()
 const pendingBatteryBySn = new Map<string, number | undefined>()
 let runtimeCapabilities: RuntimeCapabilities = detectRuntimeCapabilities(false)
+let glassUiReady = false
 
 async function main(): Promise<void> {
   installRuntimeErrorReporter(() => getAppConfig().apiBase)
@@ -567,22 +568,31 @@ async function bootBridgeAndGlassInBackground(): Promise<void> {
     }
 
     void bindDeviceBattery(bridge)
+    let startupReady = false
     try {
       await createGlassRenderer(bridge).init('home', getGlassHomeState())
+      startupReady = true
+      glassUiReady = true
     } catch (error) {
+      glassUiReady = false
       console.warn('[SafeBoot] Glass startup container failed.', error)
     }
     bridge.onEvenHubEvent((event: EvenHubEvent) => {
       void handleG2ControlEvent(event)
     })
-    try {
-      await showGlassHome(bridge)
-    } catch (error) {
-      console.warn('[SafeBoot] Glass home render failed.', error)
+    if (startupReady) {
+      try {
+        await showGlassHome(bridge)
+      } catch (error) {
+        console.warn('[SafeBoot] Glass home render failed.', error)
+      }
+      showBootStatus('手机端已就绪，G2 首页已请求显示')
+    } else {
+      showBootStatus('手机端已就绪，G2 启动页创建失败')
     }
-    showBootStatus('手机端已就绪，G2 首页已请求显示')
   } catch (error) {
     runtimeCapabilities = detectRuntimeCapabilities(false)
+    glassUiReady = false
     updateWebConnectionFooter()
     console.warn('[SafeBoot] Bridge boot failed; phone UI stays available.', error)
     showBootStatus('手机端已就绪，G2 后台连接失败')
@@ -948,6 +958,10 @@ function createGlassRenderer(bridge = getBridge()): GlassRenderer {
   })
 }
 
+function canUseG2Audio(): boolean {
+  return Boolean(getBridge() && glassUiReady)
+}
+
 async function handleG2ControlEvent(event: EvenHubEvent): Promise<void> {
   const now = Date.now()
   const normalizedEvents = normalizeEvenInputEvent(event)
@@ -986,20 +1000,20 @@ async function handleG2ControlEvent(event: EvenHubEvent): Promise<void> {
     if (intent === 'double_click') {
       inTradingMenu = true
       activeGlassPage = 'home'
-      await renderer.show('home')
+      await safeGlassShow(renderer, 'home')
       await renderG2Bookmark()
       return
     }
     if (intent === 'next') {
       tradingSubPageIndex = (tradingSubPageIndex + 1) % 6
       inTradingMenu = true
-      await renderer.show('trading_menu', { activeIndex: tradingSubPageIndex, extendedData: getTradingMenuExtendedData(isTradingCacheFresh() ? undefined : '显示上次缓存') })
+      await safeGlassShow(renderer, 'trading_menu', { activeIndex: tradingSubPageIndex, extendedData: getTradingMenuExtendedData(isTradingCacheFresh() ? undefined : '显示上次缓存') })
       return
     }
     if (intent === 'previous') {
       tradingSubPageIndex = (tradingSubPageIndex - 1 + 6) % 6
       inTradingMenu = true
-      await renderer.show('trading_menu', { activeIndex: tradingSubPageIndex, extendedData: getTradingMenuExtendedData(isTradingCacheFresh() ? undefined : '显示上次缓存') })
+      await safeGlassShow(renderer, 'trading_menu', { activeIndex: tradingSubPageIndex, extendedData: getTradingMenuExtendedData(isTradingCacheFresh() ? undefined : '显示上次缓存') })
       return
     }
     if (intent === 'click') {
@@ -1492,11 +1506,14 @@ async function startHoldToTalkSession(options: {
   const maxDurationMs = options.maxDurationMs ?? getVoiceRecordMaxMs()
   const mode = options.mode ?? 'asr'
 
-  if (strategy === 'g2-pcm' && bridge) {
+  if (strategy === 'g2-pcm' && bridge && glassUiReady) {
     await startG2HoldToTalkSession(bridge, mode, maxDurationMs, options.mockText)
     return
   }
 
+  if (strategy === 'g2-pcm' && bridge && !glassUiReady) {
+    setVoiceStatus('G2 首页尚未创建成功，先使用手机/耳机麦克风兜底，避免 audioControl 阻塞。')
+  }
   await startPhoneHoldVoiceCapture()
 }
 
@@ -1518,7 +1535,7 @@ async function stopHoldToTalkSession(reason: StopReason): Promise<void> {
     setVoiceRecordingButtons(false)
     await session.stop(reason)
     voicePageState = reason === 'cancelled' ? 'idle' : 'finalizing'
-    await createGlassRenderer(getBridge()).show(reason === 'cancelled' ? 'voice_menu' : 'voice_finalizing')
+    await safeGlassShow(createGlassRenderer(getBridge()), reason === 'cancelled' ? 'voice_menu' : 'voice_finalizing')
     return
   }
 
@@ -1542,7 +1559,7 @@ async function startG2HoldToTalkSession(
   setVoiceStatus('正在听你说话。R1 再单触结束，最长 120 秒。')
   setVoiceTranscript('')
   setVoiceRecordingButtons(true)
-  await renderer.show('voice_recording', { status: '0', pcmBytes: 0, chunks: 0 })
+  await safeGlassShow(renderer, 'voice_recording', { status: '0', pcmBytes: 0, chunks: 0 })
 
   activeG2PcmVoiceSession = await startG2PcmVoiceSession({
     bridge,
@@ -1575,7 +1592,7 @@ async function startG2HoldToTalkSession(
       voicePageState = 'error'
       setVoiceStatus(`语音错误：${error.message}`)
       updateVoiceDebug({ voicePageState: 'error', lastVoiceError: error.message })
-      void renderer.show('voice_error', { body: error.message })
+      void safeGlassShow(renderer, 'voice_error', { body: error.message })
     },
     onMaxDuration: () => {
       setVoiceStatus('已达到 120 秒上限，正在结束录音。')
@@ -1623,6 +1640,10 @@ async function startVoiceDiagnosticProbe(): Promise<void> {
     setVoiceStatus('未检测到 G2 Bridge，语音诊断只能在 Even App 真机或 simulator 中运行。')
     return
   }
+  if (!canUseG2Audio()) {
+    setVoiceStatus('G2 首页未创建成功，暂不能启动 G2 麦克风诊断。请先确认眼镜端首页显示。')
+    return
+  }
   await stopHoldToTalkSession('cancelled')
   const renderer = createGlassRenderer(bridge)
   activeGlassPage = 'voice'
@@ -1642,6 +1663,10 @@ async function runG2MicWebSocketVoiceFlow(target: VoiceTarget = 'assistant'): Pr
   const button = document.querySelector<HTMLButtonElement>('#voice-button')
   if (!bridge) {
     setVoiceStatus('请在 Even App 真机或 simulator 中测试 G2 麦克风。')
+    return
+  }
+  if (!canUseG2Audio()) {
+    setVoiceStatus('G2 首页未创建成功，暂不能启动 G2 麦克风。手机网页继续可用。')
     return
   }
 
@@ -1701,7 +1726,7 @@ async function runG2MicWebSocketVoiceFlow(target: VoiceTarget = 'assistant'): Pr
     const message = error instanceof Error ? error.message : String(error)
     updateVoiceDebug({ lastVoiceError: message })
     setVoiceStatus(`G2 语音连接失败：${message}`)
-    await showOnG2(bridge, formatForG2('语音连接失败', message))
+    await safeShowOnG2(bridge, formatForG2('语音连接失败', message))
   } finally {
     button?.removeAttribute('disabled')
     renderControlFocus()
@@ -1719,7 +1744,7 @@ async function runG2MicVoiceFlow(bridge: NonNullable<ReturnType<typeof getBridge
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     setVoiceStatus(message)
-    await showOnG2(bridge, formatForG2('G2 麦克风失败', message))
+    await safeShowOnG2(bridge, formatForG2('G2 麦克风失败', message))
   } finally {
     button?.removeAttribute('disabled')
     renderControlFocus()
@@ -1754,11 +1779,11 @@ async function runPhoneMicFallbackFlow(): Promise<void> {
     const message = `手机/蓝牙耳机麦克风可用：${label}。当前真实 ASR 未配置，请先用文字输入完成问答。`
     setVoiceStatus(message)
     setVoiceTranscript('麦克风兜底已验证，可采集；等待真实 ASR 接入。')
-    await showOnG2(bridge, formatForG2('手机麦克风可用', 'ASR 未配置\n请先用文字输入'))
+    await safeShowOnG2(bridge, formatForG2('手机麦克风可用', 'ASR 未配置\n请先用文字输入'))
   } catch (error) {
     const reason = classifyMicError(error)
     setVoiceStatus(`手机/蓝牙耳机麦克风失败：${reason.long}`)
-    await showOnG2(bridge, formatForG2('麦克风失败', reason.short))
+    await safeShowOnG2(bridge, formatForG2('麦克风失败', reason.short))
   }
 }
 
@@ -1976,7 +2001,7 @@ async function handleTranscript(
     totalBytes: meta.totalBytes ?? voiceProbeDebug.totalBytes,
     lastServerAudioDebug: meta.source ?? voiceProbeDebug.lastServerAudioDebug,
   })
-  await createGlassRenderer(getBridge()).show('voice_transcript', { transcript: normalized })
+  await safeGlassShow(createGlassRenderer(getBridge()), 'voice_transcript', { transcript: normalized })
   await routeVoiceIntent(normalized || original)
 }
 
@@ -2002,7 +2027,7 @@ async function handleVisionVoiceIntent(text: string): Promise<void> {
   const renderer = createGlassRenderer(bridge)
   const opId = startGlassOperation()
   if (!isGlassOperationValid(opId)) return
-  await renderer.show('voice_to_vision')
+  await safeGlassShow(renderer, 'voice_to_vision')
   if (!isGlassOperationValid(opId)) return
 
   if (lastVisionSummary && isRecentVisionReference(text)) {
@@ -2012,7 +2037,7 @@ async function handleVisionVoiceIntent(text: string): Promise<void> {
     addHistory({ kind: 'voice', title: '视觉语音问答', input: text, answer, detail: lastVisionSummary })
     renderHistory()
     updateVoiceDebug({ voicePageState: 'answer', lastIntent: 'vision', lastAnswer: answer })
-    await renderer.show('voice_answer', { answer })
+    await safeGlassShow(renderer, 'voice_answer', { answer })
     await speakIfEnabled(answer)
     return
   }
@@ -2027,7 +2052,7 @@ async function handleVisionVoiceIntent(text: string): Promise<void> {
     addHistory({ kind: 'voice', title: '视觉语音问答', input: text, answer, detail: lastVisionSummary })
     renderHistory()
     updateVoiceDebug({ voicePageState: 'answer', lastIntent: 'vision', lastAnswer: answer })
-    await renderer.show('voice_answer', { answer })
+    await safeGlassShow(renderer, 'voice_answer', { answer })
     await speakIfEnabled(answer)
     return
   }
@@ -2036,7 +2061,7 @@ async function handleVisionVoiceIntent(text: string): Promise<void> {
   setVoiceStatus(answer)
   setVoiceTranscript(`你：${text}\n天禄：${answer}`)
   updateVoiceDebug({ voicePageState: 'answer', lastIntent: 'vision', lastAnswer: answer })
-  await renderer.show('voice_answer', { answer })
+  await safeGlassShow(renderer, 'voice_answer', { answer })
   await speakIfEnabled(answer)
 }
 
@@ -2047,7 +2072,7 @@ async function handleTradingVoiceIntent(text: string): Promise<void> {
   if (!isGlassOperationValid(opId)) return
   setVoiceStatus('正在读取实时交易只读数据...')
   setVoiceTranscript(`你：${text}\n天禄：正在读取实时交易状态`)
-  await renderer.show('voice_transcript', { transcript: text })
+  await safeGlassShow(renderer, 'voice_transcript', { transcript: text })
   if (!isGlassOperationValid(opId)) return
 
   try {
@@ -2086,14 +2111,14 @@ async function handleTradingVoiceIntent(text: string): Promise<void> {
     activeGlassPage = 'trading'
     inTradingMenu = false
     tradingSubPageIndex = routedIndex
-    await renderer.show('voice_answer', { answer })
+    await safeGlassShow(renderer, 'voice_answer', { answer })
     await speakIfEnabled(answer)
   } catch (error) {
     const message = `交易实时只读读取失败：${error instanceof Error ? error.message : String(error)}`
     setVoiceStatus(message)
     setVoiceTranscript(`你：${text}\n天禄：${message}`)
     updateVoiceDebug({ voicePageState: 'error', lastIntent: 'trading', lastVoiceError: message })
-    await renderer.show('voice_error', { body: message })
+    await safeGlassShow(renderer, 'voice_error', { body: message })
   }
 }
 
@@ -2216,7 +2241,7 @@ async function runAssistantQuestion(transcript: string): Promise<void> {
   if (!finalQuestion) {
     const hint = '请输入或说出问题，例如：你好天禄，帮我看一下。'
     setVoiceStatus(hint)
-    await showOnG2(bridge, formatForG2('未输入问题', hint))
+    await safeShowOnG2(bridge, formatForG2('未输入问题', hint))
     return
   }
 
@@ -2228,14 +2253,14 @@ async function runAssistantQuestion(transcript: string): Promise<void> {
     setVoiceStatus('检测到看图意图，正在打开相机；拍照后会自动上传识别。')
     const input = document.querySelector<HTMLTextAreaElement>('#text-question-input')
     if (input) input.value = ''
-    await showOnG2(bridge, formatForG2('天禄看图', '正在打开相机\n拍照后自动识别'))
+    await safeShowOnG2(bridge, formatForG2('天禄看图', '正在打开相机\n拍照后自动识别'))
     await runCaptureFlow(finalQuestion)
     return
   }
 
   setVoiceTranscript(`你：${transcript}`)
   setVoiceStatus('天禄思考中...')
-  await renderer.show('voice_transcript', { transcript: finalQuestion })
+  await safeGlassShow(renderer, 'voice_transcript', { transcript: finalQuestion })
   const shouldAttachLocation = !isTradingVoiceIntent(finalQuestion)
   const locationContext = shouldAttachLocation
     ? formatLocationForPrompt(await getLocationContext(getAppConfig().enableLocationContext))
@@ -2266,7 +2291,7 @@ async function runAssistantQuestion(transcript: string): Promise<void> {
   setVoiceStatus('天禄已回答')
   setVoiceTranscript(`你：${transcript}\n天禄：${answer}`)
   updateVoiceDebug({ voicePageState: 'answer', lastAnswer: answer })
-  await renderer.show('reply', { answer })
+  await safeGlassShow(renderer, 'reply', { answer })
 
   await speakIfEnabled(answer)
 }
@@ -2356,7 +2381,7 @@ async function showTradingSubPage(index: number, renderer: GlassRenderer, option
     const hasCache = Boolean(tradingSubPageCache[currentIndex])
 
     if (!hasCache) {
-      await renderer.show('trading_menu', { activeIndex: currentIndex, extendedData: getTradingMenuExtendedData('正在载入交易数据') })
+      await safeGlassShow(renderer, 'trading_menu', { activeIndex: currentIndex, extendedData: getTradingMenuExtendedData('正在载入交易数据') })
       try {
         await refreshTradingOverviewCache()
       } catch {
@@ -2396,9 +2421,9 @@ async function showTradingScreen(
 ): Promise<void> {
   const extendedData = { ...(cache.extendedData ?? {}), statusText }
   if (screenId === 'trading_status') {
-    await renderer.show('trading_status', { trading: cache.tradingState, extendedData })
+    await safeGlassShow(renderer, 'trading_status', { trading: cache.tradingState, extendedData })
   } else {
-    await renderer.show(screenId as 'trading_prices' | 'trading_positions' | 'trading_distribution' | 'trading_attribution' | 'trading_alerts', { extendedData })
+    await safeGlassShow(renderer, screenId as 'trading_prices' | 'trading_positions' | 'trading_distribution' | 'trading_attribution' | 'trading_alerts', { extendedData })
   }
 }
 
@@ -2499,7 +2524,7 @@ async function runTradingOverview(): Promise<void> {
     tradingPanelActive = true
     button?.setAttribute('disabled', 'true')
     refreshButton?.setAttribute('disabled', 'true')
-    await renderer.show('trading_menu', {
+    await safeGlassShow(renderer, 'trading_menu', {
       activeIndex: 0,
       extendedData: getTradingMenuExtendedData(lastTradingOverview ? '显示上次缓存 · 刷新中' : '正在载入交易数据'),
     })
@@ -2517,7 +2542,7 @@ async function runTradingOverview(): Promise<void> {
     renderHistory()
     // Re-render glass with populated cache so price strip shows immediately
     if (lastTradingOverview?.live?.whitelistPrices?.length) {
-      await renderer.show('trading_menu', {
+      await safeGlassShow(renderer, 'trading_menu', {
         activeIndex: tradingSubPageIndex,
         extendedData: getTradingMenuExtendedData(),
       })
@@ -2526,7 +2551,7 @@ async function runTradingOverview(): Promise<void> {
     const message = error instanceof Error ? error.message : String(error)
     setTradingMode('刷新失败')
     setTradingSummary(message)
-    await renderer.show('error', { body: message })
+    await safeGlassShow(renderer, 'error', { body: message })
   } finally {
     button?.removeAttribute('disabled')
     refreshButton?.removeAttribute('disabled')
@@ -2539,7 +2564,7 @@ async function runOpenClawFlow(): Promise<void> {
   stopAutoVoiceDetection()
   setVoiceStatus('正在进入 OpenCLAW / 天禄语音通道...')
   setVoiceTranscript('')
-  await showOnG2(bridge, formatForG2('OpenCLAW', 'R1 已确认\n正在连接 G2 麦克风'))
+  await safeShowOnG2(bridge, formatForG2('OpenCLAW', 'R1 已确认\n正在连接 G2 麦克风'))
 
   const status = await getOpenClawStatus().catch(() => undefined)
   if (!status?.enabled) {
@@ -2551,14 +2576,15 @@ async function runOpenClawFlow(): Promise<void> {
     return
   }
 
-  await runG2MicWebSocketVoiceFlow('openclaw')
+  if (canUseG2Audio()) await runG2MicWebSocketVoiceFlow('openclaw')
+  else setVoiceStatus('G2 首页未创建成功，OpenCLAW 文字输入仍可使用。')
 }
 
 async function runOpenClawBrowserVoiceFlow(prompt = '请对着手机说 OpenCLAW 问题。'): Promise<void> {
   const bridge = getBridge()
   setVoiceStatus(`${prompt} 当前版本已禁用浏览器麦克风主链路，请用 G2 MicProbe 或文字输入。`)
   setVoiceTranscript('')
-  await showOnG2(bridge, formatForG2('OpenCLAW 语音', '请在 G2 真机测试 PCM\n浏览器麦克风不是主路径'))
+  await safeShowOnG2(bridge, formatForG2('OpenCLAW 语音', '请在 G2 真机测试 PCM\n浏览器麦克风不是主路径'))
   renderControlFocus()
 }
 
@@ -2573,7 +2599,7 @@ async function runOpenClawQuestion(transcript: string): Promise<void> {
 
   setVoiceStatus('OpenCLAW 思考中...')
   setVoiceTranscript(`你：${transcript}`)
-  await renderer.show('voice_transcript', { transcript: question })
+  await safeGlassShow(renderer, 'voice_transcript', { transcript: question })
 
   const response = await askOpenClaw(question, lastVisionSummary)
   addHistory({
@@ -2589,7 +2615,7 @@ async function runOpenClawQuestion(transcript: string): Promise<void> {
   if (input) input.value = ''
   setVoiceStatus(`OpenCLAW 已回答：${response.provider}`)
   setVoiceTranscript(`你：${transcript}\nOpenCLAW：${response.answer}`)
-  await renderer.show('reply', { answer: response.answer })
+  await safeGlassShow(renderer, 'reply', { answer: response.answer })
   await speakIfEnabled(response.answer)
 }
 
@@ -2698,7 +2724,7 @@ async function startAutoVoiceDetection(): Promise<void> {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     setVoiceStatus(`自动监听失败：${message}`)
-    await showOnG2(bridge, formatForG2('自动监听失败', message))
+    await safeShowOnG2(bridge, formatForG2('自动监听失败', message))
   } finally {
     autoVoiceDetectionRunning = false
   }
@@ -2741,7 +2767,7 @@ async function tryAutoCaptureFromVoice(prompt: string, transcript: string): Prom
   try {
     setVoiceTranscript(`你：${transcript}\n天禄：正在自动抓拍`)
     setVoiceStatus('天禄正在自动抓拍并识别...')
-    await showOnG2(bridge, formatForG2('天禄看图', '正在自动抓拍\n拍后自动识别'))
+    await safeShowOnG2(bridge, formatForG2('天禄看图', '正在自动抓拍\n拍后自动识别'))
 
     if (voiceCameraReadyPromise) await withTimeout(voiceCameraReadyPromise, 2500).catch(() => false)
     const image = await capturePreparedPhoto()
@@ -2749,7 +2775,7 @@ async function tryAutoCaptureFromVoice(prompt: string, transcript: string): Prom
       setVoiceStatus('检测到看图意图，正在进入视觉识别流程。请按当前环境完成拍照或选图。')
       activeGlassPage = 'vision'
       selectG2Bookmark('vision')
-      await showOnG2(bridge, formatForG2('天禄看图', '请完成拍照或选图\n完成后自动识别'))
+      await safeShowOnG2(bridge, formatForG2('天禄看图', '请完成拍照或选图\n完成后自动识别'))
       await runCaptureFlow(prompt, undefined, { source: 'voice-vision-intent' })
       return true
     }
@@ -3025,6 +3051,9 @@ function bindConfigPanel(): void {
   document.querySelector<HTMLButtonElement>('#permission-request-button')?.addEventListener('click', () => {
     void runPermissionSelfCheck(true)
   })
+  document.querySelector<HTMLButtonElement>('#location-check-button')?.addEventListener('click', () => {
+    void runLocationSelfCheck()
+  })
   document.querySelector<HTMLButtonElement>('#refresh-battery-button')?.addEventListener('click', async () => {
     const bridge = getBridge()
     if (bridge) {
@@ -3120,7 +3149,7 @@ async function runPermissionSelfCheck(requestAccess: boolean): Promise<void> {
       }
     }
 
-    if (bridge) {
+    if (bridge && glassUiReady) {
       try {
         await bridge.audioControl(true)
         await bridge.audioControl(false)
@@ -3128,6 +3157,8 @@ async function runPermissionSelfCheck(requestAccess: boolean): Promise<void> {
       } catch (error) {
         lines.push(`G2 麦克风开关：FAIL ${formatShortError(error)}`)
       }
+    } else if (bridge) {
+      lines.push('G2 麦克风开关：SKIP 眼镜首页未创建成功，按 SDK 要求不调用 audioControl')
     }
 
     try {
@@ -3152,7 +3183,7 @@ async function runPermissionSelfCheck(requestAccess: boolean): Promise<void> {
   setConfigStatus(requestAccess ? '权限请求完成，请查看自检结果' : '权限自检完成')
   setVoiceStatus(result)
   renderR1CameraDebug()
-  await renderer.show('diagnostics', {
+  await safeGlassShow(renderer, 'diagnostics', {
     diagnostics: {
       g2: runtimeCapabilities.hasBridge ? '已连接' : runtimeCapabilities.label,
       r1: runtimeCapabilities.canUseR1 ? (lastR1InputSummary === 'none' ? '待输入' : '已响应') : '不可用',
@@ -3185,7 +3216,7 @@ async function runConnectionDiagnostics(repair: boolean): Promise<void> {
   const write = async (text: string): Promise<void> => {
     if (statusEl) statusEl.textContent = text
     setConfigStatus(repair ? '正在一键修复连接...' : '正在一键扫描连接...')
-    await renderer.show('diagnostics', { diagnostics })
+    await safeGlassShow(renderer, 'diagnostics', { diagnostics })
   }
 
   await write('正在扫描...')
@@ -3230,7 +3261,7 @@ async function runConnectionDiagnostics(repair: boolean): Promise<void> {
       }
     }
 
-    if (bridge) {
+    if (bridge && glassUiReady) {
       try {
         await bridge.audioControl(true)
         await bridge.audioControl(false)
@@ -3239,6 +3270,8 @@ async function runConnectionDiagnostics(repair: boolean): Promise<void> {
       } catch (error) {
         lines.push(`G2 麦克风开关：FAIL ${formatShortError(error)}`)
       }
+    } else if (bridge) {
+      lines.push('G2 麦克风开关：SKIP 眼镜首页未创建成功，按 SDK 要求不调用 audioControl')
     }
   } else {
     lines.push(`视觉引擎：${getVisionEngineStatusText()}`)
@@ -3279,7 +3312,23 @@ async function runConnectionDiagnostics(repair: boolean): Promise<void> {
   setConfigStatus(repair ? '一键修复完成，请查看结果' : '一键扫描完成')
   setVoiceStatus(result)
   renderR1CameraDebug()
-  await renderer.show('diagnostics', { diagnostics })
+  await safeGlassShow(renderer, 'diagnostics', { diagnostics })
+}
+
+async function runLocationSelfCheck(): Promise<void> {
+  const statusEl = document.querySelector('#permission-status')
+  const setStatus = (text: string): void => {
+    if (statusEl) statusEl.textContent = text
+    setConfigStatus(text)
+    setVoiceStatus(text)
+  }
+
+  setStatus('正在请求定位授权...')
+  const location = await getLocationContext(true)
+  const result = location.status === 'ready'
+    ? `定位：OK ${location.approximate || '已获取'}${location.accuracyMeters ? `，约 ${location.accuracyMeters} 米` : ''}`
+    : `定位：${location.status.toUpperCase()} ${location.message || '未获取'}`
+  setStatus(result)
 }
 
 async function handleDiagnosticsR1Intent(intent: 'click' | 'double_click' | 'next' | 'previous'): Promise<void> {
@@ -3588,7 +3637,7 @@ async function renderG2Bookmark(): Promise<void> {
 }
 
 async function showGlassHome(bridge = getBridge()): Promise<void> {
-  await createGlassRenderer(bridge).show('home', getGlassHomeState())
+  await safeGlassShow(createGlassRenderer(bridge), 'home', getGlassHomeState())
 }
 
 function getGlassHomeState(): {
@@ -3653,7 +3702,7 @@ async function enterSettingsPage(): Promise<void> {
   // 更新手机网页 UI - 使用单一真相源
   setPhoneActiveBookmark('openclaw')
   activeGlassPage = 'settings'
-  await createGlassRenderer(getBridge()).show('settings', {
+  await safeGlassShow(createGlassRenderer(getBridge()), 'settings', {
     settings: {
       microphone: 'G2/手机',
       camera: '手机后置',
@@ -3723,19 +3772,19 @@ async function startVisionEngineFromPhoneButton(): Promise<void> {
     lastVisionError = ''
     setVisionImageInfo('正在打开手机直接拍照 / 选择照片。')
     setVoiceStatus('正在打开手机直接拍照 / 选择照片。')
-    await renderer.show('vision_preparing')
+    await safeGlassShow(renderer, 'vision_preparing')
     const state = await startVisionEngineFromPhoneGesture()
     visionState = 'camera_ready'
     setVisionImageInfo(`连续视觉流已就绪：${state.videoWidth}x${state.videoHeight}。`)
     setVoiceStatus('连续视觉流已就绪。')
-    await renderer.show('vision_ready')
+    await safeGlassShow(renderer, 'vision_ready')
   } catch (error) {
     visionState = 'error'
     const message = error instanceof Error ? error.message : String(error)
     lastVisionError = message
     setVisionImageInfo(`直接拍照/连续流启动失败：${message}`)
     setVoiceStatus(`直接拍照/连续流启动失败：${message}`)
-    await renderer.show('error', { body: `直接拍照失败\n${message}` })
+    await safeGlassShow(renderer, 'error', { body: `直接拍照失败\n${message}` })
   } finally {
     renderR1CameraDebug()
   }
@@ -3778,7 +3827,7 @@ async function enterVoicePage(options: { autoStart?: boolean } = {}): Promise<vo
     return
   }
 
-  await createGlassRenderer(bridge).show('voice_menu')
+  await safeGlassShow(createGlassRenderer(bridge), 'voice_menu')
 }
 
 async function handleVoiceR1Intent(intent: 'click' | 'double_click' | 'next' | 'previous'): Promise<void> {
@@ -3863,7 +3912,7 @@ async function handleVisionR1Intent(intent: 'click' | 'double_click' | 'next' | 
       await captureVisionFrame(renderer, 'R1 上滑已重新拍照。再次单触上传，下滑取消。')
     } else if (visionState === 'camera_ready') {
       setVoiceStatus('R1 单击拍照，下滑返回。')
-      await renderer.show('vision_ready')
+      await safeGlassShow(renderer, 'vision_ready')
     } else if (visionState === 'result' || visionState === 'error') {
       setVoiceStatus(visionState === 'result' ? '识别已完成。单击重播，双击返回主菜单。' : '视觉错误。单击重试，下滑返回。')
     } else {
@@ -3878,7 +3927,7 @@ async function handleVisionR1Intent(intent: 'click' | 'double_click' | 'next' | 
       uploadInFlight = false
       lastCapturedAt = 0
       visionState = 'camera_ready'
-      await renderer.show('vision_ready')
+      await safeGlassShow(renderer, 'vision_ready')
       setVoiceStatus('已取消当前照片，摄像头保持待命。')
       renderR1CameraDebug()
     } else if (visionState === 'camera_ready' || visionState === 'result' || visionState === 'error') {
@@ -3891,8 +3940,12 @@ async function handleVisionR1Intent(intent: 'click' | 'double_click' | 'next' | 
   }
 
   if (intent === 'double_click' || intent === 'click') {
-    if (visionState === 'captured' && pendingCapturedImage && intent === 'double_click') {
-      await uploadPendingVisionImage(renderer, 'R1 双击确认，正在发送图片给天禄...', 'r1-double-confirm')
+    if (visionState === 'captured' && pendingCapturedImage) {
+      await uploadPendingVisionImage(
+        renderer,
+        intent === 'double_click' ? 'R1 双击确认，正在发送图片给天禄...' : 'R1 单触确认，正在发送图片给天禄...',
+        intent === 'double_click' ? 'r1-double-confirm' : 'r1-single-confirm',
+      )
       return
     }
 
@@ -3934,7 +3987,7 @@ async function handleVisionR1Intent(intent: 'click' | 'double_click' | 'next' | 
 async function uploadPendingVisionImage(renderer: GlassRenderer, statusText: string, source = 'r1-single-confirm'): Promise<void> {
   if (!pendingCapturedImage) {
     setVoiceStatus('当前没有可上传的照片，请先拍照或选择照片。')
-    await renderer.show('vision_ready')
+    await safeGlassShow(renderer, 'vision_ready')
     return
   }
   if (uploadInFlight) {
@@ -3944,7 +3997,7 @@ async function uploadPendingVisionImage(renderer: GlassRenderer, statusText: str
 
   uploadInFlight = true
   visionState = 'uploading'
-  await renderer.show('vision_uploading')
+  await safeGlassShow(renderer, 'vision_uploading')
   setVoiceStatus(statusText)
   lastUploadAt = new Date().toLocaleTimeString('zh-CN')
   lastUploadSource = source
@@ -3976,7 +4029,9 @@ async function captureVisionFrame(renderer: GlassRenderer, statusText: string): 
     lastCaptureAt = new Date().toLocaleTimeString('zh-CN')
     lastCapturedAt = Date.now()
     visionState = 'captured'
-    await renderer.show('vision_captured')
+    const previewBase64 = await createVisionPreviewBase64(pendingCapturedImage, 288, 144, 0.56)
+    if (previewBase64) await safeGlassImagePreview(renderer, previewBase64, 'R1 已截帧')
+    else await safeGlassShow(renderer, 'vision_captured')
     setVoiceStatus(statusText)
     setVisionImageInfo([
       `R1 截帧：${image.width}x${image.height}`,
@@ -3989,7 +4044,7 @@ async function captureVisionFrame(renderer: GlassRenderer, statusText: string): 
     visionState = 'error'
     const message = error instanceof Error ? error.message : String(error)
     lastVisionError = message
-    await renderer.show('error', { body: message })
+    await safeGlassShow(renderer, 'error', { body: message })
     setVoiceStatus(message)
     renderR1CameraDebug()
     return false
