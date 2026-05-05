@@ -16,6 +16,7 @@ export interface HistoryItem {
 
 const STORAGE_KEY = 'g2-vva-history-v1'
 const MAX_HISTORY = 80
+const LOCAL_STORAGE_MAX_IMAGE_ITEMS = 12
 const MAX_KIND_HISTORY: Partial<Record<HistoryKind, number>> = {
   voice: 15,
 }
@@ -154,26 +155,48 @@ function persistHistory(items: HistoryItem[]): void {
       await saveIndexedHistory(items)
       storageMode = 'indexeddb'
       lastHistoryError = ''
-      tryRemoveLocalHistory()
+      tryWriteLocalHistory(createLocalStorageSnapshot(items), false)
     })
     .catch((error) => {
       reportHistoryError('IndexedDB 写入失败，尝试 localStorage 备用', error)
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+      if (tryWriteLocalHistory(items, true)) {
         storageMode = 'localstorage'
-      } catch (localError) {
-        storageMode = 'memory'
-        reportHistoryError('历史保存失败，已仅保存在内存', localError)
+        return
       }
+
+      const compactItems = items.map(stripLargeHistoryFields)
+      if (tryWriteLocalHistory(compactItems, true)) {
+        storageMode = 'localstorage'
+        reportHistoryError('图片字段过大，已保留历史文字记录', error)
+        return
+      }
+
+      storageMode = 'memory'
+      reportHistoryError('历史保存失败，已仅保存在内存', error)
     })
 }
 
-function tryRemoveLocalHistory(): void {
+function tryWriteLocalHistory(items: HistoryItem[], reportError: boolean): boolean {
   try {
-    localStorage.removeItem(STORAGE_KEY)
-  } catch {
-    // IndexedDB is primary, so a stale localStorage cleanup failure is non-fatal.
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(limitHistory(items)))
+    return true
+  } catch (error) {
+    if (reportError) reportHistoryError('localStorage 写入失败', error)
+    return false
   }
+}
+
+function createLocalStorageSnapshot(items: HistoryItem[]): HistoryItem[] {
+  return limitHistory(items).map((item, index) => {
+    if (item.kind === 'vision' && index < LOCAL_STORAGE_MAX_IMAGE_ITEMS) return item
+    return stripLargeHistoryFields(item)
+  })
+}
+
+function stripLargeHistoryFields(item: HistoryItem): HistoryItem {
+  if (!item.thumbnailDataUrl) return item
+  const { thumbnailDataUrl: _thumbnailDataUrl, ...rest } = item
+  return rest
 }
 
 function reportHistoryError(prefix: string, error: unknown): void {

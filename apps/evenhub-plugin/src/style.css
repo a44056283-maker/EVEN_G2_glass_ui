@@ -65,6 +65,7 @@ body {
 #app[data-active-bookmark="voice"] > .voice-panel,
 #app[data-active-bookmark="trading"] > .trading-panel,
 #app[data-active-bookmark="openclaw"] > .config-panel,
+#app[data-active-bookmark="history"] > .history-dashboard,
 #app[data-active-bookmark="openclaw"] > #debug-log {
   display: grid;
 }
@@ -945,6 +946,23 @@ pre {
   background: var(--hud-bg);
 }
 
+.history-dashboard {
+  display: grid;
+  gap: 14px;
+  border: 1px solid var(--hud-line-soft);
+  border-radius: 24px;
+  padding: 18px;
+  background:
+    linear-gradient(135deg, rgba(93, 214, 255, 0.08), transparent 45%),
+    var(--hud-bg);
+}
+
+.history-category-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .vision-result-panel {
   display: grid;
   gap: 12px;
@@ -1393,6 +1411,10 @@ pre {
     grid-template-columns: 1fr;
   }
 
+  .history-category-grid {
+    grid-template-columns: 1fr;
+  }
+
   .bookmark-tab {
     min-height: 68px;
   }
@@ -1435,6 +1457,7 @@ pre {
 #app[data-active-bookmark="voice"] > .voice-panel,
 #app[data-active-bookmark="trading"] > .trading-panel,
 #app[data-active-bookmark="openclaw"] > .config-panel,
+#app[data-active-bookmark="history"] > .history-dashboard,
 #app[data-active-bookmark="openclaw"] > #debug-log {
   display: grid;
 }

@@ -311,6 +311,11 @@ async function main(): Promise<void> {
     // 只切换手机页面，不触发 G2 业务逻辑
     setPhoneActiveBookmark('openclaw')
   })
+  document.querySelector<HTMLButtonElement>('#history-button')?.addEventListener('click', () => {
+    void unlockAudioPlayback()
+    setPhoneActiveBookmark('history')
+    renderHistory()
+  })
   document.querySelector<HTMLButtonElement>('#refresh-trading-button')?.addEventListener('click', () => {
     void unlockAudioPlayback()
     selectG2Bookmark('trading')
@@ -2445,7 +2450,7 @@ async function runOpenClawQuestion(transcript: string): Promise<void> {
 
   const response = await askOpenClaw(question, lastVisionSummary)
   addHistory({
-    kind: 'voice',
+    kind: 'openclaw',
     title: 'OpenCLAW 对话',
     input: transcript,
     answer: response.answer,
@@ -2490,6 +2495,11 @@ async function executeFocusedControl(): Promise<void> {
   }
   if (control.id === 'openclaw-button') {
     setPhoneActiveBookmark('openclaw')
+    return
+  }
+  if (control.id === 'history-button') {
+    setPhoneActiveBookmark('history')
+    renderHistory()
     return
   }
   if (control.id === 'vision-capture-action') {
@@ -3404,6 +3414,10 @@ function getBookmarkCardDescription(id: PhoneBookmarkId): string {
     return '连接诊断、权限自检、配置保存'
   }
 
+  if (id === 'history') {
+    return '查看视觉、语音、交易、OpenCLAW 和全部历史记录。'
+  }
+
   const tradingMode = document.querySelector('#trading-mode')?.textContent?.trim()
   const trading = document.querySelector('#trading-summary')?.textContent?.trim()
   if (trading && trading !== '点击”交易状态”查看白名单价格、机器人、持仓和风险的只读入口。') {
@@ -3898,6 +3912,7 @@ function getSelectableControls(): Array<{ id: string; label: string; button: HTM
         'voice-button',
         'trading-button',
         'openclaw-button',
+        'history-button',
         'trading-refresh-action',
         'trading-preset-prices',
         'trading-preset-risk',
@@ -3931,6 +3946,7 @@ function getControlLabel(id: string, button: HTMLButtonElement): string {
   if (id === 'trading-button') return '交易状态'
   if (id === 'settings-button') return '系统设置'
   if (id === 'openclaw-button') return 'OpenCLAW 对话'
+  if (id === 'history-button') return '历史记录'
   if (id === 'vision-capture-action') return '拍照识别'
   if (id === 'vision-replay-action') return '重播识别结果'
   if (id === 'voice-orb-action') return '按住说话'

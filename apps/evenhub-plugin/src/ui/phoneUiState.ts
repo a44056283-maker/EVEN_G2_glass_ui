@@ -77,6 +77,7 @@ export function renderPhoneBookmarkCard(id: PhoneBookmarkId): void {
     else if (id === 'voice') action.textContent = '按住说话，松开识别'
     else if (id === 'trading') action.textContent = '单击刷新状态'
     else if (id === 'openclaw') action.textContent = 'R1 单击扫描，上下滑动'
+    else if (id === 'history') action.textContent = '查看全部历史与分类历史'
   }
 }
 

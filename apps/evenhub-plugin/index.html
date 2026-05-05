@@ -50,6 +50,13 @@
               <small>连接诊断</small>
             </span>
           </button>
+          <button id="history-button" class="bookmark-tab" type="button" data-bookmark="history">
+            <span class="bookmark-icon">≡</span>
+            <span>
+              <strong>历史</strong>
+              <small>全部记录</small>
+            </span>
+          </button>
         </div>
         <div id="bookmark-card" class="bookmark-card">
           <div>
@@ -251,12 +258,44 @@ R1：未上报
           <div data-history-list="openclaw"></div>
         </section>
       </section>
-      <section class="history-panel">
+      <section class="history-dashboard" data-phone-section="history-panel-all">
         <div class="history-header">
           <div class="history-title">全部历史</div>
           <button id="clear-history-button" class="clear-history-button" type="button" data-clear-history>清空</button>
         </div>
         <div id="history-list" data-history-list="all"></div>
+        <div class="history-category-grid">
+          <section class="history-panel">
+            <div class="history-header">
+              <div class="history-title">视觉历史</div>
+            </div>
+            <div data-history-list="vision"></div>
+          </section>
+          <section class="history-panel">
+            <div class="history-header">
+              <div class="history-title">语音历史</div>
+            </div>
+            <div data-history-list="voice"></div>
+          </section>
+          <section class="history-panel">
+            <div class="history-header">
+              <div class="history-title">交易历史</div>
+            </div>
+            <div data-history-list="trading"></div>
+          </section>
+          <section class="history-panel">
+            <div class="history-header">
+              <div class="history-title">OpenCLAW 历史</div>
+            </div>
+            <div data-history-list="openclaw"></div>
+          </section>
+          <section class="history-panel">
+            <div class="history-header">
+              <div class="history-title">设置历史</div>
+            </div>
+            <div data-history-list="settings"></div>
+          </section>
+        </div>
       </section>
       <pre id="debug-log" data-phone-section="debug-log"></pre>
     </main>

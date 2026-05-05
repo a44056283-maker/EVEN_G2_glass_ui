@@ -15,6 +15,7 @@ export type PhonePageSectionId =
   | 'voice-panel'
   | 'trading-panel'
   | 'config-panel'
+  | 'history-panel-all'
   | 'debug-log'
 
 /**
@@ -27,7 +28,7 @@ export const PHONE_PAGE_SECTIONS: Record<PhoneBookmarkId, PhonePageSectionId[]> 
   trading: ['trading-panel'],
   openclaw: ['config-panel', 'debug-log'],
   diagnostics: ['debug-log'],
-  history: [],
+  history: ['history-panel-all'],
   debug: ['debug-log'],
 }
 
@@ -39,6 +40,7 @@ const ALL_SECTION_SELECTORS = [
   '[data-phone-section="voice-panel"]',
   '[data-phone-section="trading-panel"]',
   '[data-phone-section="config-panel"]',
+  '[data-phone-section="history-panel-all"]',
   '[data-phone-section="debug-log"]',
 ].join(', ')
 

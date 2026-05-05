@@ -54,6 +54,13 @@ export const phoneBookmarks: PhoneBookmark[] = [
     action: '连接诊断、权限自检、配置保存',
     cssValue: 'openclaw',
   },
+  {
+    id: 'history',
+    title: '历史记录',
+    controlId: 'history-button',
+    action: '查看视觉、语音、交易、OpenCLAW 和全部历史',
+    cssValue: 'history',
+  },
 ]
 
 /** 根据 id 查找手机书签 */
