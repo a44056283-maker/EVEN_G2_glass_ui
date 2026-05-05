@@ -256,7 +256,7 @@ async function main(): Promise<void> {
   initBatteryDisplay()
   const bridge = await initBridge()
   runtimeCapabilities = detectRuntimeCapabilities(Boolean(bridge))
-  await initHistoryStorage(bridge)
+  void initHistoryStorage(bridge)
   updateWebConnectionFooter()
 
   if (bridge) {

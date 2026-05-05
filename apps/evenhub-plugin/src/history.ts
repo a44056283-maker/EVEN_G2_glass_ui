@@ -35,6 +35,7 @@ let loadFinished = false
 let saveQueue: Promise<void> = Promise.resolve()
 let historyVersion = 0
 let renderQueued = false
+let bridgeHydrationInFlight = false
 
 export function getLastHistoryError(): string {
   return lastHistoryError
@@ -46,6 +47,8 @@ export async function initHistoryStorage(bridge: EvenAppBridge | undefined): Pro
     if (!loadStarted) getHistory()
     return
   }
+  if (bridgeHydrationInFlight || loadFinished) return
+  bridgeHydrationInFlight = true
 
   loadStarted = true
   const versionAtStart = historyVersion
@@ -70,6 +73,8 @@ export async function initHistoryStorage(bridge: EvenAppBridge | undefined): Pro
     loadFinished = true
     storageMode = indexedHistory.length ? 'indexeddb' : localHistory.length ? 'localstorage' : 'memory'
     renderHistory()
+  } finally {
+    bridgeHydrationInFlight = false
   }
 }
 
@@ -181,7 +186,7 @@ function readLocalHistory(): HistoryItem[] {
 async function hydrateHistoryFromIndexedDb(): Promise<void> {
   loadStarted = true
   if (historyBridge && !loadFinished) {
-    await initHistoryStorage(historyBridge)
+    void initHistoryStorage(historyBridge)
     return
   }
   if (loadFinished && storageMode === 'indexeddb') return
