@@ -243,25 +243,15 @@ let runtimeCapabilities: RuntimeCapabilities = detectRuntimeCapabilities(false)
 
 async function main(): Promise<void> {
   installRuntimeErrorReporter(() => getAppConfig().apiBase)
-  startWebClock()
-  bindGlobalButtonFeedback()
-  bindCriticalVisionEngineButton()
-  // 初始化电量显示：优先从缓存恢复，避免长期显示 "--%"
-  initBatteryDisplay()
-  const bridge = await initBridge()
-  runtimeCapabilities = detectRuntimeCapabilities(Boolean(bridge))
-  updateWebConnectionFooter()
+  renderStaticPhoneShell()
+  setPhoneActiveBookmark('vision')
+  bindCriticalUiEvents()
+  bindBookmarkTabsByEventDelegation()
+  showBootStatus('手机端已就绪')
+  void bootBridgeAndGlassInBackground()
+  void hydrateHistoryInBackground()
+  void initOptionalDiagnosticsInBackground()
 
-  if (bridge) {
-    await bindDeviceBattery(bridge)
-    await createGlassRenderer(bridge).init('home', getGlassHomeState())
-    bridge.onEvenHubEvent((event: EvenHubEvent) => {
-      void handleG2ControlEvent(event)
-    })
-  }
-
-  if (bridge) await showGlassHome(bridge)
-  else await showOnG2(bridge, initialText)
   document.querySelector<HTMLButtonElement>('#capture-button')?.addEventListener('click', () => {
     void unlockAudioPlayback()
     // 只切换手机页面，不触发 G2 业务逻辑
@@ -544,10 +534,99 @@ async function main(): Promise<void> {
   // 初始化手机网页 UI 状态（单一真相源）
   syncPhoneBookmarkDom()
   renderControlFocus()
-  renderHistory()
-  await prepareVoiceInput()
-  await renderG2Bookmark()
   stopAutoVoiceDetection()
+}
+
+function renderStaticPhoneShell(): void {
+  startWebClock()
+  initBatteryDisplay()
+  syncPhoneBookmarkDom()
+  renderControlFocus()
+  updateWebConnectionFooter()
+}
+
+function bindCriticalUiEvents(): void {
+  bindGlobalButtonFeedback()
+  bindCriticalVisionEngineButton()
+  bindPhoneHoldVoiceButton()
+}
+
+function bindBookmarkTabsByEventDelegation(): void {
+  const tabs = document.querySelector<HTMLElement>('.bookmark-tabs')
+  if (!tabs || tabs.dataset.delegatedBound === 'true') return
+  tabs.dataset.delegatedBound = 'true'
+  tabs.addEventListener('click', (event) => {
+    const target = (event.target as HTMLElement | null)?.closest<HTMLElement>('[data-bookmark]')
+    if (!target) return
+    const id = target.getAttribute('data-bookmark')
+    if (!isPhoneBookmarkId(id)) return
+    void unlockAudioPlayback()
+    setPhoneActiveBookmark(id)
+    if (id === 'history') void hydrateHistoryInBackground()
+  })
+}
+
+function isPhoneBookmarkId(value: string | null): value is PhoneBookmarkId {
+  return value === 'vision' || value === 'voice' || value === 'trading' || value === 'openclaw' || value === 'history'
+}
+
+function showBootStatus(message: string): void {
+  setVoiceStatus(message)
+  setInteractionFeedback(message)
+  updateWebConnectionFooter()
+}
+
+async function bootBridgeAndGlassInBackground(): Promise<void> {
+  try {
+    const bridge = await initBridge()
+    runtimeCapabilities = detectRuntimeCapabilities(Boolean(bridge))
+    updateWebConnectionFooter()
+    if (!bridge) {
+      showBootStatus('手机端已就绪，G2 Bridge 未连接')
+      return
+    }
+
+    void bindDeviceBattery(bridge)
+    try {
+      await createGlassRenderer(bridge).init('home', getGlassHomeState())
+    } catch (error) {
+      console.warn('[SafeBoot] Glass startup container failed.', error)
+    }
+    bridge.onEvenHubEvent((event: EvenHubEvent) => {
+      void handleG2ControlEvent(event)
+    })
+    try {
+      await showGlassHome(bridge)
+    } catch (error) {
+      console.warn('[SafeBoot] Glass home render failed.', error)
+    }
+    showBootStatus('手机端已就绪，G2 首页已请求显示')
+  } catch (error) {
+    runtimeCapabilities = detectRuntimeCapabilities(false)
+    updateWebConnectionFooter()
+    console.warn('[SafeBoot] Bridge boot failed; phone UI stays available.', error)
+    showBootStatus('手机端已就绪，G2 后台连接失败')
+  }
+}
+
+async function hydrateHistoryInBackground(): Promise<void> {
+  try {
+    await delay(0)
+    renderHistory()
+  } catch (error) {
+    console.warn('[SafeBoot] History hydration failed.', error)
+  }
+}
+
+async function initOptionalDiagnosticsInBackground(): Promise<void> {
+  try {
+    await delay(0)
+    await prepareVoiceInput()
+  } catch (error) {
+    console.warn('[SafeBoot] Optional voice diagnostics failed.', error)
+  } finally {
+    stopAutoVoiceDetection()
+  }
 }
 
 async function bindDeviceBattery(bridge: NonNullable<ReturnType<typeof getBridge>>): Promise<void> {
