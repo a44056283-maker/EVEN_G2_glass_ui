@@ -195,7 +195,7 @@ async function safeGetLocationContext(enabled: boolean): Promise<string | undefi
   if (!enabled) return undefined
 
   try {
-    return formatLocationForPrompt(await getLocationContext(true, { resolveAddress: true }))
+    return formatLocationForPrompt(await getLocationContext(true))
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     console.warn('Location context unavailable; continuing vision request.', error)

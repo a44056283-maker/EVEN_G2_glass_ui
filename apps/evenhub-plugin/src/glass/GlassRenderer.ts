@@ -12,11 +12,6 @@ import { renderGlassScreen, type GlassScreenId, type GlassScreenState } from './
 import { sanitizeForG2Text } from './glassText'
 import { GlassColor, GLASS_H, GLASS_MAIN_CONTAINER_ID, GLASS_MAIN_CONTAINER_NAME, GLASS_W } from './glassTheme'
 
-type PreviewImagePayload = {
-  label: string
-  data: number[] | string
-}
-
 export class GlassRenderer {
   private currentContent = ''
   private imageQueue: Promise<void> = Promise.resolve()
@@ -109,22 +104,19 @@ export class GlassRenderer {
   }
 
   private async updatePreviewImage(containerID: number, containerName: string, imageBase64: string): Promise<void> {
-    const payloads = await this.createPreviewPayloads(imageBase64)
-    const results: string[] = []
+    const rawResult = await this.tryUpdatePreviewImage(containerID, containerName, imageBase64)
+    if (rawResult.ok) return
 
-    for (const payload of payloads) {
-      const updateResult = await this.tryUpdatePreviewImage(containerID, containerName, payload.data)
-      results.push(`${payload.label}=${String(updateResult.result)}`)
-      if (updateResult.ok) return
-    }
+    const dataUrlResult = await this.tryUpdatePreviewImage(containerID, containerName, `data:image/jpeg;base64,${imageBase64}`)
+    if (dataUrlResult.ok) return
 
-    throw new Error(`G2 image preview failed: ${results.join('; ')}`)
+    throw new Error(`G2 image preview failed: base64=${rawResult.result}; dataUrl=${dataUrlResult.result}`)
   }
 
   private async tryUpdatePreviewImage(
     containerID: number,
     containerName: string,
-    imageData: number[] | string,
+    imageData: string,
   ): Promise<{ ok: boolean; result: unknown }> {
     const result = await this.bridge!.updateImageRawData(new ImageRawDataUpdate({
       containerID,
@@ -135,89 +127,6 @@ export class GlassRenderer {
       ok: ImageRawDataUpdateResult.isSuccess(ImageRawDataUpdateResult.normalize(result)),
       result,
     }
-  }
-
-  private async createPreviewPayloads(imageBase64: string): Promise<PreviewImagePayload[]> {
-    const payloads: PreviewImagePayload[] = []
-
-    for (const preset of [
-      { label: 'gray288Bytes', width: 288, height: 144, quality: 0.46 },
-      { label: 'gray192Bytes', width: 192, height: 96, quality: 0.42 },
-    ]) {
-      const dataUrl = await this.createGrayPreviewDataUrl(imageBase64, preset.width, preset.height, preset.quality)
-      if (!dataUrl) continue
-      const base64 = dataUrl.split(',')[1]
-      if (!base64) continue
-
-      payloads.push({ label: preset.label, data: this.base64ToNumberArray(base64) })
-      payloads.push({ label: preset.label.replace('Bytes', 'Base64'), data: base64 })
-      payloads.push({ label: preset.label.replace('Bytes', 'DataUrl'), data: dataUrl })
-    }
-
-    payloads.push({ label: 'originalBase64', data: imageBase64 })
-    payloads.push({ label: 'originalDataUrl', data: `data:image/jpeg;base64,${imageBase64}` })
-    return payloads
-  }
-
-  private async createGrayPreviewDataUrl(
-    imageBase64: string,
-    maxWidth: number,
-    maxHeight: number,
-    quality: number,
-  ): Promise<string | undefined> {
-    try {
-      const image = await this.loadPreviewImage(`data:image/jpeg;base64,${imageBase64}`)
-      const sourceWidth = image.naturalWidth || maxWidth
-      const sourceHeight = image.naturalHeight || maxHeight
-      const scale = Math.min(1, maxWidth / sourceWidth, maxHeight / sourceHeight)
-      const width = Math.max(20, Math.min(maxWidth, Math.round(sourceWidth * scale)))
-      const height = Math.max(20, Math.min(maxHeight, Math.round(sourceHeight * scale)))
-      const canvas = document.createElement('canvas')
-      canvas.width = width
-      canvas.height = height
-      const context = canvas.getContext('2d', { willReadFrequently: true })
-      if (!context) return undefined
-
-      context.fillStyle = '#ffffff'
-      context.fillRect(0, 0, width, height)
-      context.drawImage(image, 0, 0, width, height)
-
-      const imageData = context.getImageData(0, 0, width, height)
-      const pixels = imageData.data
-      for (let index = 0; index < pixels.length; index += 4) {
-        const gray = pixels[index] * 0.299 + pixels[index + 1] * 0.587 + pixels[index + 2] * 0.114
-        const contrasted = Math.max(0, Math.min(255, (gray - 128) * 1.18 + 128))
-        pixels[index] = contrasted
-        pixels[index + 1] = contrasted
-        pixels[index + 2] = contrasted
-        pixels[index + 3] = 255
-      }
-      context.putImageData(imageData, 0, 0)
-
-      return canvas.toDataURL('image/jpeg', quality)
-    } catch (error) {
-      console.warn('[G2 preview] grayscale SDK payload generation failed', error)
-      return undefined
-    }
-  }
-
-  private loadPreviewImage(dataUrl: string): Promise<HTMLImageElement> {
-    return new Promise((resolve, reject) => {
-      const image = new Image()
-      image.decoding = 'async'
-      image.onload = () => resolve(image)
-      image.onerror = () => reject(new Error('G2 preview image decode failed'))
-      image.src = dataUrl
-    })
-  }
-
-  private base64ToNumberArray(base64: string): number[] {
-    const binary = atob(base64)
-    const bytes = new Array<number>(binary.length)
-    for (let index = 0; index < binary.length; index += 1) {
-      bytes[index] = binary.charCodeAt(index)
-    }
-    return bytes
   }
 
   render(screen: GlassScreenId, state: Omit<GlassScreenState, 'battery'> = {}): string {

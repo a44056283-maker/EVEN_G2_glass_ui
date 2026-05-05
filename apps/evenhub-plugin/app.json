@@ -3,7 +3,7 @@
   "edition": "202601",
   "name": "天禄 G2 助手",
   "description": "视觉·语音·交易三位一体智能眼镜助手",
-  "version": "0.5.22",
+  "version": "0.5.23",
   "min_app_version": "2.0.0",
   "min_sdk_version": "0.0.9",
   "entrypoint": "index.html",
@@ -20,10 +20,6 @@
     {
       "name": "album",
       "desc": "Use image picker fallback when camera stream is unavailable."
-    },
-    {
-      "name": "location",
-      "desc": "Use phone location for visual recognition and Tianlu voice context."
     },
     {
       "name": "g2-microphone",

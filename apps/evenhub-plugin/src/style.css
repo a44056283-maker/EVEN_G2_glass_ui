@@ -1113,8 +1113,7 @@ pre {
   gap: 8px;
 }
 
-.permission-tools,
-.location-tools {
+.permission-tools {
   display: grid;
   gap: 10px;
   border: 1px solid rgba(103, 246, 232, 0.18);
@@ -1123,25 +1122,16 @@ pre {
   background: rgba(5, 12, 18, 0.52);
 }
 
-.location-tools {
-  border-color: rgba(255, 209, 102, 0.24);
-}
-
 .permission-title {
   color: var(--hud-teal);
   font-weight: 800;
 }
 
-#permission-status,
-#location-status-debug {
+#permission-status {
   min-height: 64px;
   white-space: pre-wrap;
   color: var(--hud-muted);
   line-height: 1.45;
-  margin: 0;
-  border: 0;
-  padding: 0;
-  background: transparent;
 }
 
 .permission-actions {

@@ -31,15 +31,9 @@ import {
 import { getAppConfig, resetAppConfig, saveAppConfig } from './config'
 import { formatForG2, getGlassBatteryText, setDeviceBatteryLevels, showBookmarkOnG2, showOnG2, startWebClock } from './display'
 import { getControlDirection, getControlIntent, isClickEvent } from './events'
-import { addHistory, clearHistory, initHistoryStorage, renderHistory, updateHistoryItem } from './history'
+import { addHistory, clearHistory, renderHistory, updateHistoryItem } from './history'
 import { formatInputEventForLog, normalizeEvenInputEvent } from './input/normalizeEvenInputEvent'
-import {
-  clearLocationCache,
-  formatLocationForDisplay,
-  formatLocationForPrompt,
-  getLocationContext,
-  getLocationPermissionState,
-} from './locationContext'
+import { formatLocationForPrompt, getLocationContext } from './locationContext'
 import { installRuntimeErrorReporter, recordRuntimeError } from './runtimeErrorReporter'
 import { speakResponse, speakWithBrowser, stopSpeechPlayback, unlockAudioPlayback } from './speech'
 import { GlassRenderer } from './glass/GlassRenderer'
@@ -256,7 +250,6 @@ async function main(): Promise<void> {
   initBatteryDisplay()
   const bridge = await initBridge()
   runtimeCapabilities = detectRuntimeCapabilities(Boolean(bridge))
-  void initHistoryStorage(bridge)
   updateWebConnectionFooter()
 
   if (bridge) {
@@ -1056,8 +1049,7 @@ async function runCaptureFlow(prompt?: string, preparedImage?: CapturedImage, op
 	    })
     setStage('vision', 'MiniMax 正在识别画面', 72)
     const config = getAppConfig()
-    const location = await getLocationContext(config.enableLocationContext, { resolveAddress: true })
-    const locationContext = formatLocationForPrompt(location)
+    const location = await getLocationContext(config.enableLocationContext)
     const capturedAt = new Date().toISOString()
     const recentVisionContext = [
       lastVisionPrompt ? `上次问题：${lastVisionPrompt}` : '',
@@ -1066,7 +1058,7 @@ async function runCaptureFlow(prompt?: string, preparedImage?: CapturedImage, op
     ].filter(Boolean).join('\n')
     const result = await recognizeImage(image, effectivePrompt || undefined, {
       capturedAt,
-      locationContext,
+      locationContext: formatLocationForPrompt(location),
       recentVisionContext,
     })
     const elapsedMs = Math.round(performance.now() - requestStartedAt)
@@ -1082,10 +1074,7 @@ async function runCaptureFlow(prompt?: string, preparedImage?: CapturedImage, op
     renderBookmarkChrome()
     updateHistoryItem(captureHistory.id, {
       answer: result.answer,
-      detail: [
-        result.description,
-        locationContext ? `定位上下文：${locationContext}` : '',
-      ].filter(Boolean).join('\n'),
+      detail: result.description,
       summary: result.description,
     })
     renderHistory()
@@ -1094,7 +1083,7 @@ async function runCaptureFlow(prompt?: string, preparedImage?: CapturedImage, op
     setStage('speak', '识别完成，正在朗读', 92)
     setVisionResultPanel(
       `完成 · ${elapsedMs} ms · ${result.provider || 'vision api'}`,
-      [`图片大小：约 ${formatBytes(imageBytes)}`, `answer length：${result.answer.length}`, '来源：vision api', locationContext].filter(Boolean).join('\n'),
+      [`图片大小：约 ${formatBytes(imageBytes)}`, `answer length：${result.answer.length}`, '来源：vision api'].join('\n'),
       result.answer,
     )
     await safeGlassShow(renderer, 'reply', { answer: result.answer })
@@ -1328,7 +1317,7 @@ async function askVisionFollowup(question: string, source = 'vision-followup'): 
     selectG2Bookmark('vision')
     setVisionResultPanel('追问中', contextParts.join('\n'), `问题：${trimmed}\n天禄正在结合最近画面回答...`)
     await safeGlassShow(renderer, 'voice_transcript', { transcript: trimmed })
-    const location = await getLocationContext(getAppConfig().enableLocationContext, { resolveAddress: true })
+    const location = await getLocationContext(getAppConfig().enableLocationContext)
     const locationContext = formatLocationForPrompt(location)
     const response = await askAssistant(trimmed, contextParts.join('\n'), {
       capturedAt: new Date().toISOString(),
@@ -2188,7 +2177,7 @@ async function runAssistantQuestion(transcript: string): Promise<void> {
   await renderer.show('voice_transcript', { transcript: finalQuestion })
   const shouldAttachLocation = !isTradingVoiceIntent(finalQuestion)
   const locationContext = shouldAttachLocation
-    ? formatLocationForPrompt(await getLocationContext(getAppConfig().enableLocationContext, { resolveAddress: true }))
+    ? formatLocationForPrompt(await getLocationContext(getAppConfig().enableLocationContext))
     : undefined
   const response = await askAssistant(finalQuestion, lastVisionSummary, {
     capturedAt: new Date().toISOString(),
@@ -2205,7 +2194,7 @@ async function runAssistantQuestion(transcript: string): Promise<void> {
     answer,
     detail: [
       response.provider ? `来源：${response.provider}` : '',
-      locationContext ? `实时定位上下文：${locationContext}` : '',
+      locationContext ? '已加入实时定位上下文' : '',
       lastVisionSummary ? `最近画面：${lastVisionSummary}` : '',
     ]
       .filter(Boolean)
@@ -2979,12 +2968,6 @@ function bindConfigPanel(): void {
   document.querySelector<HTMLButtonElement>('#permission-request-button')?.addEventListener('click', () => {
     void runPermissionSelfCheck(true)
   })
-  document.querySelector<HTMLButtonElement>('#location-check-button')?.addEventListener('click', () => {
-    void runLocationDiagnostics(false)
-  })
-  document.querySelector<HTMLButtonElement>('#location-request-button')?.addEventListener('click', () => {
-    void runLocationDiagnostics(true)
-  })
   document.querySelector<HTMLButtonElement>('#refresh-battery-button')?.addEventListener('click', async () => {
     const bridge = getBridge()
     if (bridge) {
@@ -3023,83 +3006,11 @@ function renderConfigPanel(config = getAppConfig()): void {
   if (autoListen) autoListen.checked = config.autoListenOnStart
   if (locationContext) locationContext.checked = config.enableLocationContext
   updateTtsStatusDisplay()
-  updateLocationStatusDisplay()
 }
 
 function setConfigStatus(text: string): void {
   const el = document.querySelector('#config-status')
   if (el) el.textContent = text
-}
-
-async function updateLocationStatusDisplay(): Promise<void> {
-  const el = document.querySelector('#location-status-debug')
-  if (!el) return
-  const config = getAppConfig()
-  const permission = await getLocationPermissionState()
-  el.textContent = [
-    `定位开关：${config.enableLocationContext ? '开启' : '关闭'}`,
-    `WebView API：${navigator.geolocation ? 'navigator.geolocation 可用' : '不可用'}`,
-    `权限：${permission}`,
-    '粗略地址：点击“检测定位”获取',
-    '精度：—',
-  ].join('\n')
-}
-
-async function runLocationDiagnostics(forceRequest: boolean): Promise<void> {
-  const el = document.querySelector('#location-status-debug')
-  const config = getAppConfig()
-  const bridge = getBridge()
-  const renderer = createGlassRenderer(bridge)
-
-  if (!config.enableLocationContext) {
-    const text = '定位开关：关闭\n处理：请先勾选“视觉识别和呼叫天禄加入实时定位”并保存。'
-    if (el) el.textContent = text
-    setConfigStatus('定位未开启')
-    addHistory({
-      kind: 'settings',
-      title: '定位诊断',
-      answer: '定位开关关闭',
-      detail: text,
-      summary: '定位未开启',
-    })
-    renderHistory()
-    return
-  }
-
-  if (forceRequest) clearLocationCache()
-  const startedAt = performance.now()
-  const pending = [
-    '定位：检测中',
-    `WebView API：${navigator.geolocation ? 'navigator.geolocation 可用' : '不可用'}`,
-    '正在请求手机系统定位权限，失败不会阻塞视觉/语音。',
-  ].join('\n')
-  if (el) el.textContent = pending
-  setConfigStatus(forceRequest ? '正在请求实时定位...' : '正在检测定位能力...')
-  await renderer.show('diagnostics', {
-    diagnostics: {
-      g2: bridge ? '已连接' : '未连接',
-      r1: runtimeCapabilities.canUseR1 ? '可用' : '待检测',
-      cam: '不检测',
-      mic: '不检测',
-      asr: '不检测',
-      claw: '不检测',
-      bot: '定位中',
-    },
-  })
-
-  const location = await getLocationContext(true, { forceRefresh: forceRequest, resolveAddress: true })
-  const elapsedMs = Math.round(performance.now() - startedAt)
-  const display = `${formatLocationForDisplay(location)}\n耗时：${elapsedMs} ms\n用途：视觉识别与呼叫天禄，交易状态不使用定位。`
-  if (el) el.textContent = display
-  setConfigStatus(location.status === 'ready' ? '定位可用，已写入上下文' : '定位不可用，已显示失败原因')
-  addHistory({
-    kind: 'settings',
-    title: '定位诊断',
-    answer: location.status === 'ready' ? '定位可用' : '定位不可用',
-    detail: display,
-    summary: location.address || location.message || location.status,
-  })
-  renderHistory()
 }
 
 async function runPermissionSelfCheck(requestAccess: boolean): Promise<void> {
