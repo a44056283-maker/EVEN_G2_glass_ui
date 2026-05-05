@@ -1,4 +1,4 @@
-import { clearIndexedHistory, loadIndexedHistory, saveIndexedHistory } from './historyStore'
+import { clearBridgeHistory, clearIndexedHistory, loadBridgeHistory, loadIndexedHistory, saveBridgeHistory, saveIndexedHistory } from './historyStore'
 
 export type HistoryKind = 'vision' | 'voice' | 'trading' | 'openclaw' | 'settings'
 
@@ -18,6 +18,10 @@ export interface HistoryItem {
 const STORAGE_KEY = 'g2-vva-history-v1'
 const MAX_HISTORY = 80
 const LOCAL_STORAGE_MAX_IMAGE_ITEMS = 12
+const BRIDGE_HISTORY_MAX_BYTES = 380_000
+const BRIDGE_HISTORY_MAX_IMAGE_ITEMS = 4
+const BRIDGE_HISTORY_COMPACT_IMAGE_ITEMS = 2
+const CLEAR_TOMBSTONE_KEY = 'g2-vva-history-clear-pending-v1'
 const MAX_KIND_HISTORY: Partial<Record<HistoryKind, number>> = {
   voice: 15,
 }
@@ -25,12 +29,13 @@ const MAX_KIND_HISTORY: Partial<Record<HistoryKind, number>> = {
 let lastHistoryError = ''
 let memoryHistoryFallback: HistoryItem[] = []
 let cachedHistory: HistoryItem[] = []
-let storageMode: 'indexeddb' | 'localstorage' | 'memory' = 'memory'
+let storageMode: 'bridge' | 'indexeddb' | 'localstorage' | 'memory' = 'memory'
 let loadStarted = false
 let loadFinished = false
 let saveQueue: Promise<void> = Promise.resolve()
 let historyVersion = 0
 let renderQueued = false
+let bridgeClearPending = readClearPending()
 
 export function getLastHistoryError(): string {
   return lastHistoryError
@@ -90,9 +95,17 @@ export function clearHistory(): void {
     reportHistoryError('localStorage 清空失败', error)
   }
   saveQueue = saveQueue
-    .then(() => clearIndexedHistory())
+    .then(async () => {
+      const bridgeCleared = await clearBridgeHistory().catch((error) => {
+        reportHistoryError('Even Bridge 历史清空失败', error)
+        return false
+      })
+      bridgeClearPending = !bridgeCleared
+      writeClearPending(bridgeClearPending)
+      await clearIndexedHistory()
+    })
     .then(() => {
-      storageMode = 'indexeddb'
+      storageMode = bridgeClearPending ? 'indexeddb' : 'bridge'
     })
     .catch((error) => {
       storageMode = storageMode === 'indexeddb' ? 'localstorage' : storageMode
@@ -137,19 +150,31 @@ function readLocalHistory(): HistoryItem[] {
 
 async function hydrateHistoryFromIndexedDb(): Promise<void> {
   loadStarted = true
-  if (loadFinished && storageMode === 'indexeddb') return
+  if (loadFinished && storageMode === 'bridge') return
   const versionAtStart = historyVersion
   try {
-    const indexedHistory = limitHistory(normalizeHistoryItems(await loadIndexedHistory()))
+    if (bridgeClearPending) {
+      const bridgeCleared = await clearBridgeHistory().catch(() => false)
+      if (bridgeCleared) {
+        bridgeClearPending = false
+        writeClearPending(false)
+      }
+    }
+    const bridgeHistory = bridgeClearPending ? [] : limitHistory(normalizeHistoryItems(await loadBridgeHistory().catch(() => [])))
+    const indexedHistory = limitHistory(normalizeHistoryItems(await loadIndexedHistory().catch(() => [])))
     const localHistory = readLocalHistory()
-    const loadedHistory = indexedHistory.length ? indexedHistory : localHistory
+    const loadedHistory = mergeHistory(bridgeHistory, mergeHistory(indexedHistory, localHistory))
     const next = versionAtStart === historyVersion ? loadedHistory : mergeHistory(cachedHistory, loadedHistory)
     cachedHistory = next
     memoryHistoryFallback = next
     loadFinished = true
-    storageMode = 'indexeddb'
+    storageMode = bridgeHistory.length || !bridgeClearPending ? 'bridge' : 'indexeddb'
     lastHistoryError = ''
-    if (!indexedHistory.length && localHistory.length && versionAtStart === historyVersion) await saveIndexedHistory(localHistory)
+    if (loadedHistory.length && versionAtStart === historyVersion) {
+      const bridgeOk = await saveBridgeSnapshot(loadedHistory)
+      if (!bridgeOk) storageMode = 'indexeddb'
+    }
+    if (!indexedHistory.length && loadedHistory.length && versionAtStart === historyVersion) await saveIndexedHistory(loadedHistory)
     renderHistory()
   } catch (error) {
     loadFinished = true
@@ -167,8 +192,9 @@ function persistHistory(items: HistoryItem[]): void {
   memoryHistoryFallback = items.slice(0, MAX_HISTORY)
   saveQueue = saveQueue
     .then(async () => {
+      const bridgeOk = await saveBridgeSnapshot(items)
       await saveIndexedHistory(items)
-      storageMode = 'indexeddb'
+      storageMode = bridgeOk ? 'bridge' : 'indexeddb'
       lastHistoryError = ''
       tryWriteLocalHistory(createLocalStorageSnapshot(items), false)
     })
@@ -209,6 +235,75 @@ function createLocalStorageSnapshot(items: HistoryItem[]): HistoryItem[] {
     }
     return stripLargeHistoryFields(item)
   })
+}
+
+function createPersistentSnapshot(items: HistoryItem[]): HistoryItem[] {
+  return fitBridgeSnapshot(items, BRIDGE_HISTORY_MAX_IMAGE_ITEMS)
+}
+
+async function saveBridgeSnapshot(items: HistoryItem[]): Promise<boolean> {
+  const snapshot = createPersistentSnapshot(items)
+  if (await trySaveBridgeSnapshot(snapshot)) return true
+  const compact = fitBridgeSnapshot(items, BRIDGE_HISTORY_COMPACT_IMAGE_ITEMS)
+  if (await trySaveBridgeSnapshot(compact)) {
+    reportHistoryError('Even Bridge 历史图片容量有限，已保留缩略图和文字记录', new Error('bridge history compacted'))
+    return true
+  }
+  const textOnly = limitHistory(items).map(stripLargeHistoryFields)
+  if (await trySaveBridgeSnapshot(textOnly)) {
+    reportHistoryError('Even Bridge 历史容量有限，已保留文字记录', new Error('bridge history text only'))
+    return true
+  }
+  return false
+}
+
+async function trySaveBridgeSnapshot(items: HistoryItem[]): Promise<boolean> {
+  return saveBridgeHistory(items).catch((error) => {
+    reportHistoryError('Even Bridge 历史写入失败，继续本地备用', error)
+    return false
+  })
+}
+
+function fitBridgeSnapshot(items: HistoryItem[], imageItems: number): HistoryItem[] {
+  let keptImages = 0
+  let snapshot = limitHistory(items).map((item) => {
+    if (item.kind === 'vision' && keptImages < imageItems) {
+      keptImages += 1
+      return trimBridgeImageItem(item)
+    }
+    return stripLargeHistoryFields(item)
+  })
+
+  while (estimateJsonBytes(snapshot) > BRIDGE_HISTORY_MAX_BYTES && snapshot.length > 0) {
+    const imageIndex = snapshot.findIndex((item) => item.imageDataUrl)
+    if (imageIndex >= 0) snapshot[imageIndex] = { ...snapshot[imageIndex], imageDataUrl: undefined }
+    else snapshot = snapshot.slice(0, Math.max(1, snapshot.length - 1))
+  }
+  return snapshot
+}
+
+function trimBridgeImageItem(item: HistoryItem): HistoryItem {
+  const imageDataUrl = item.imageDataUrl && item.imageDataUrl.length < 90_000 ? item.imageDataUrl : undefined
+  return { ...item, imageDataUrl }
+}
+
+function estimateJsonBytes(items: HistoryItem[]): number {
+  return new Blob([JSON.stringify(items)]).size
+}
+
+function readClearPending(): boolean {
+  try {
+    return localStorage.getItem(CLEAR_TOMBSTONE_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function writeClearPending(value: boolean): void {
+  try {
+    if (value) localStorage.setItem(CLEAR_TOMBSTONE_KEY, '1')
+    else localStorage.removeItem(CLEAR_TOMBSTONE_KEY)
+  } catch {}
 }
 
 function stripLargeHistoryFields(item: HistoryItem): HistoryItem {

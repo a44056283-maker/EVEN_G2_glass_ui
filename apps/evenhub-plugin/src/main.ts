@@ -562,6 +562,7 @@ async function bootBridgeAndGlassInBackground(): Promise<void> {
     const bridge = await initBridge()
     runtimeCapabilities = detectRuntimeCapabilities(Boolean(bridge))
     updateWebConnectionFooter()
+    void hydrateHistoryInBackground()
     if (!bridge) {
       showBootStatus('手机端已就绪，G2 Bridge 未连接')
       return
@@ -1086,7 +1087,7 @@ async function runCaptureFlow(prompt?: string, preparedImage?: CapturedImage, op
       prompt: effectivePrompt,
     })
     const thumbnailDataUrl = await createVisionPreviewDataUrl(image, 240, 240, 0.62)
-    const imageDataUrl = createCapturedImageDataUrl(image)
+    const imageDataUrl = await createVisionPreviewDataUrl(image, 720, 720, 0.78)
     const captureHistory = addHistory({
       kind: 'vision',
       title: effectivePrompt ? '天禄看图' : '拍照识别',
@@ -1098,7 +1099,7 @@ async function runCaptureFlow(prompt?: string, preparedImage?: CapturedImage, op
       imageDataUrl,
     })
     renderHistory()
-    const g2PreviewBase64 = await createVisionPreviewBase64(image, 288, 144, 0.56)
+    const g2PreviewBase64 = await createGlassPreviewBase64(image)
     if (g2PreviewBase64) {
       await safeGlassImagePreview(renderer, g2PreviewBase64, '照片已采集')
     } else {
@@ -1330,11 +1331,27 @@ async function createVisionPreviewBase64(
   return dataUrl?.split(',')[1]
 }
 
+async function createGlassPreviewBase64(image: CapturedImage): Promise<string | undefined> {
+  const dataUrl = await createFittedImageDataUrl(image, 288, 144, 'image/png', 1, { exactCanvas: true, grayscale: true })
+  return dataUrl?.split(',')[1]
+}
+
 async function createVisionPreviewDataUrl(
   image: CapturedImage,
   maxWidth: number,
   maxHeight: number,
   quality: number,
+): Promise<string | undefined> {
+  return createFittedImageDataUrl(image, maxWidth, maxHeight, 'image/jpeg', quality, { exactCanvas: false, grayscale: false })
+}
+
+async function createFittedImageDataUrl(
+  image: CapturedImage,
+  maxWidth: number,
+  maxHeight: number,
+  mimeType: 'image/jpeg' | 'image/png',
+  quality: number,
+  options: { exactCanvas: boolean; grayscale: boolean },
 ): Promise<string | undefined> {
   if (!image.imageBase64) return undefined
   try {
@@ -1354,12 +1371,26 @@ async function createVisionPreviewDataUrl(
     const width = Math.max(1, Math.round(sourceWidth * scale))
     const height = Math.max(1, Math.round(sourceHeight * scale))
     const canvas = document.createElement('canvas')
-    canvas.width = width
-    canvas.height = height
+    canvas.width = options.exactCanvas ? maxWidth : width
+    canvas.height = options.exactCanvas ? maxHeight : height
     const context = canvas.getContext('2d')
     if (!context) return undefined
-    context.drawImage(img, 0, 0, width, height)
-    return canvas.toDataURL('image/jpeg', quality)
+    context.fillStyle = '#000'
+    context.fillRect(0, 0, canvas.width, canvas.height)
+    const x = Math.floor((canvas.width - width) / 2)
+    const y = Math.floor((canvas.height - height) / 2)
+    context.drawImage(img, x, y, width, height)
+    if (options.grayscale) {
+      const pixels = context.getImageData(0, 0, canvas.width, canvas.height)
+      for (let i = 0; i < pixels.data.length; i += 4) {
+        const gray = Math.round(pixels.data[i] * 0.299 + pixels.data[i + 1] * 0.587 + pixels.data[i + 2] * 0.114)
+        pixels.data[i] = gray
+        pixels.data[i + 1] = gray
+        pixels.data[i + 2] = gray
+      }
+      context.putImageData(pixels, 0, 0)
+    }
+    return canvas.toDataURL(mimeType, quality)
   } catch (error) {
     console.warn('[G2 history] preview image generation failed', error)
     return undefined
@@ -4029,7 +4060,7 @@ async function captureVisionFrame(renderer: GlassRenderer, statusText: string): 
     lastCaptureAt = new Date().toLocaleTimeString('zh-CN')
     lastCapturedAt = Date.now()
     visionState = 'captured'
-    const previewBase64 = await createVisionPreviewBase64(pendingCapturedImage, 288, 144, 0.56)
+    const previewBase64 = await createGlassPreviewBase64(pendingCapturedImage)
     if (previewBase64) await safeGlassImagePreview(renderer, previewBase64, 'R1 已截帧')
     else await safeGlassShow(renderer, 'vision_captured')
     setVoiceStatus(statusText)

@@ -1,8 +1,10 @@
 import type { HistoryItem } from './history'
+import { getBridge } from './bridge'
 
 const DB_NAME = 'g2-vva-history-db'
 const STORE_NAME = 'history'
 const DB_VERSION = 1
+const BRIDGE_HISTORY_KEY = 'g2-vva-history-v2'
 
 function hasIndexedDb(): boolean {
   return typeof indexedDB !== 'undefined'
@@ -45,6 +47,27 @@ export async function loadIndexedHistory(): Promise<HistoryItem[]> {
       reject(tx.error ?? new Error('IndexedDB transaction failed'))
     }
   })
+}
+
+export async function loadBridgeHistory(): Promise<HistoryItem[]> {
+  const bridge = getBridge()
+  if (!bridge) return []
+  const raw = await bridge.getLocalStorage(BRIDGE_HISTORY_KEY)
+  if (!raw) return []
+  const parsed = JSON.parse(raw)
+  return Array.isArray(parsed) ? parsed as HistoryItem[] : []
+}
+
+export async function saveBridgeHistory(items: HistoryItem[]): Promise<boolean> {
+  const bridge = getBridge()
+  if (!bridge) return false
+  return bridge.setLocalStorage(BRIDGE_HISTORY_KEY, JSON.stringify(items))
+}
+
+export async function clearBridgeHistory(): Promise<boolean> {
+  const bridge = getBridge()
+  if (!bridge) return false
+  return bridge.setLocalStorage(BRIDGE_HISTORY_KEY, '')
 }
 
 export async function saveIndexedHistory(items: HistoryItem[]): Promise<void> {

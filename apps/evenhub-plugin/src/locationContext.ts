@@ -8,7 +8,7 @@ export interface LocationContext {
 }
 
 const CACHE_TTL_MS = 5 * 60 * 1000
-const REQUEST_TIMEOUT_MS = 5000
+const REQUEST_TIMEOUT_MS = 8000
 
 let cachedLocation: LocationContext | undefined
 let cachedAt = 0
@@ -52,18 +52,36 @@ export function formatLocationForPrompt(location: LocationContext): string {
 
 function requestPositionWithTimeout(): Promise<GeolocationPosition> {
   return new Promise((resolve, reject) => {
-    const timer = window.setTimeout(() => reject(new Error('location timeout')), REQUEST_TIMEOUT_MS)
+    let settled = false
+    let watchId: number | undefined
+    const finish = (callback: () => void) => {
+      if (settled) return
+      settled = true
+      window.clearTimeout(timer)
+      if (watchId !== undefined) navigator.geolocation.clearWatch(watchId)
+      callback()
+    }
+    const timer = window.setTimeout(() => finish(() => reject(new Error('location timeout'))), REQUEST_TIMEOUT_MS)
+    const onPosition = (position: GeolocationPosition) => finish(() => resolve(position))
+    const onError = (error: GeolocationPositionError) => {
+      if (watchId !== undefined) finish(() => reject(new Error(error.message || 'location error')))
+    }
+
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        window.clearTimeout(timer)
-        resolve(position)
-      },
-      (error) => {
-        window.clearTimeout(timer)
-        reject(new Error(error.message || 'location error'))
+      onPosition,
+      () => {
+        try {
+          watchId = navigator.geolocation.watchPosition(onPosition, onError, {
+            enableHighAccuracy: true,
+            timeout: REQUEST_TIMEOUT_MS,
+            maximumAge: CACHE_TTL_MS,
+          })
+        } catch (error) {
+          finish(() => reject(error))
+        }
       },
       {
-        enableHighAccuracy: false,
+        enableHighAccuracy: true,
         timeout: REQUEST_TIMEOUT_MS,
         maximumAge: CACHE_TTL_MS,
       },
