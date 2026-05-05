@@ -1,4 +1,5 @@
 import { clearIndexedHistory, loadIndexedHistory, saveIndexedHistory } from './historyStore'
+import type { EvenAppBridge } from '@evenrealities/even_hub_sdk'
 
 export type HistoryKind = 'vision' | 'voice' | 'trading' | 'openclaw' | 'settings'
 
@@ -16,8 +17,10 @@ export interface HistoryItem {
 }
 
 const STORAGE_KEY = 'g2-vva-history-v1'
+const BRIDGE_STORAGE_KEY = 'g2-vva-history-bridge-v2'
 const MAX_HISTORY = 80
 const LOCAL_STORAGE_MAX_IMAGE_ITEMS = 12
+const BRIDGE_FULL_IMAGE_ITEMS = 6
 const MAX_KIND_HISTORY: Partial<Record<HistoryKind, number>> = {
   voice: 15,
 }
@@ -25,7 +28,8 @@ const MAX_KIND_HISTORY: Partial<Record<HistoryKind, number>> = {
 let lastHistoryError = ''
 let memoryHistoryFallback: HistoryItem[] = []
 let cachedHistory: HistoryItem[] = []
-let storageMode: 'indexeddb' | 'localstorage' | 'memory' = 'memory'
+let storageMode: 'bridge' | 'indexeddb' | 'localstorage' | 'memory' = 'memory'
+let historyBridge: EvenAppBridge | undefined
 let loadStarted = false
 let loadFinished = false
 let saveQueue: Promise<void> = Promise.resolve()
@@ -34,6 +38,39 @@ let renderQueued = false
 
 export function getLastHistoryError(): string {
   return lastHistoryError
+}
+
+export async function initHistoryStorage(bridge: EvenAppBridge | undefined): Promise<void> {
+  historyBridge = bridge
+  if (!bridge) {
+    if (!loadStarted) getHistory()
+    return
+  }
+
+  loadStarted = true
+  const versionAtStart = historyVersion
+  try {
+    const bridgeHistory = limitHistory(normalizeHistoryItems(JSON.parse(await bridge.getLocalStorage(BRIDGE_STORAGE_KEY) || '[]')))
+    const localHistory = readLocalHistory()
+    const indexedHistory = limitHistory(normalizeHistoryItems(await loadIndexedHistory().catch(() => [])))
+    const loadedHistory = mergeHistory(bridgeHistory, mergeHistory(indexedHistory, localHistory))
+    cachedHistory = versionAtStart === historyVersion ? loadedHistory : mergeHistory(cachedHistory, loadedHistory)
+    memoryHistoryFallback = cachedHistory
+    loadFinished = true
+    storageMode = 'bridge'
+    lastHistoryError = ''
+    renderHistory()
+    if (cachedHistory.length) persistHistory(cachedHistory)
+  } catch (error) {
+    reportHistoryError('Even Bridge 历史读取失败，已切换备用存储', error)
+    const localHistory = readLocalHistory()
+    const indexedHistory = limitHistory(normalizeHistoryItems(await loadIndexedHistory().catch(() => [])))
+    cachedHistory = mergeHistory(indexedHistory, localHistory)
+    memoryHistoryFallback = cachedHistory
+    loadFinished = true
+    storageMode = indexedHistory.length ? 'indexeddb' : localHistory.length ? 'localstorage' : 'memory'
+    renderHistory()
+  }
 }
 
 export function addHistory(item: Omit<HistoryItem, 'id' | 'createdAt'>): HistoryItem {
@@ -90,9 +127,15 @@ export function clearHistory(): void {
     reportHistoryError('localStorage 清空失败', error)
   }
   saveQueue = saveQueue
-    .then(() => clearIndexedHistory())
+    .then(async () => {
+      if (historyBridge) {
+        await historyBridge.setLocalStorage(BRIDGE_STORAGE_KEY, '')
+        storageMode = 'bridge'
+      }
+      await clearIndexedHistory()
+    })
     .then(() => {
-      storageMode = 'indexeddb'
+      storageMode = historyBridge ? 'bridge' : 'indexeddb'
     })
     .catch((error) => {
       storageMode = storageMode === 'indexeddb' ? 'localstorage' : storageMode
@@ -137,6 +180,10 @@ function readLocalHistory(): HistoryItem[] {
 
 async function hydrateHistoryFromIndexedDb(): Promise<void> {
   loadStarted = true
+  if (historyBridge && !loadFinished) {
+    await initHistoryStorage(historyBridge)
+    return
+  }
   if (loadFinished && storageMode === 'indexeddb') return
   const versionAtStart = historyVersion
   try {
@@ -167,9 +214,23 @@ function persistHistory(items: HistoryItem[]): void {
   memoryHistoryFallback = items.slice(0, MAX_HISTORY)
   saveQueue = saveQueue
     .then(async () => {
+      if (historyBridge) {
+        const fullPayload = JSON.stringify(createBridgeStorageSnapshot(items, false))
+        const bridgeOk = await historyBridge.setLocalStorage(BRIDGE_STORAGE_KEY, fullPayload)
+        if (!bridgeOk) {
+          const compactOk = await historyBridge.setLocalStorage(BRIDGE_STORAGE_KEY, JSON.stringify(createBridgeStorageSnapshot(items, true)))
+          if (!compactOk) throw new Error('Even Bridge setLocalStorage returned false')
+          reportHistoryError('Even Bridge 图片历史过大，已保留文字和缩略图历史', new Error('bridge compact fallback'))
+        } else {
+          lastHistoryError = ''
+        }
+        storageMode = 'bridge'
+      }
       await saveIndexedHistory(items)
-      storageMode = 'indexeddb'
-      lastHistoryError = ''
+      if (!historyBridge) {
+        storageMode = 'indexeddb'
+        lastHistoryError = ''
+      }
       tryWriteLocalHistory(createLocalStorageSnapshot(items), false)
     })
     .catch((error) => {
@@ -203,6 +264,25 @@ function tryWriteLocalHistory(items: HistoryItem[], reportError: boolean): boole
 
 function createLocalStorageSnapshot(items: HistoryItem[]): HistoryItem[] {
   return limitHistory(items).map((item, index) => {
+    if (item.kind === 'vision' && index < LOCAL_STORAGE_MAX_IMAGE_ITEMS) {
+      const { imageDataUrl: _imageDataUrl, ...thumbnailOnly } = item
+      return thumbnailOnly
+    }
+    return stripLargeHistoryFields(item)
+  })
+}
+
+function createBridgeStorageSnapshot(items: HistoryItem[], compact: boolean): HistoryItem[] {
+  return limitHistory(items).map((item, index) => {
+    if (compact) {
+      if (item.kind === 'vision' && index < LOCAL_STORAGE_MAX_IMAGE_ITEMS) {
+        const { imageDataUrl: _imageDataUrl, ...thumbnailOnly } = item
+        return thumbnailOnly
+      }
+      return stripLargeHistoryFields(item)
+    }
+
+    if (item.kind === 'vision' && index < BRIDGE_FULL_IMAGE_ITEMS) return item
     if (item.kind === 'vision' && index < LOCAL_STORAGE_MAX_IMAGE_ITEMS) {
       const { imageDataUrl: _imageDataUrl, ...thumbnailOnly } = item
       return thumbnailOnly

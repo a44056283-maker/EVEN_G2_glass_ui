@@ -31,7 +31,7 @@ import {
 import { getAppConfig, resetAppConfig, saveAppConfig } from './config'
 import { formatForG2, getGlassBatteryText, setDeviceBatteryLevels, showBookmarkOnG2, showOnG2, startWebClock } from './display'
 import { getControlDirection, getControlIntent, isClickEvent } from './events'
-import { addHistory, clearHistory, renderHistory, updateHistoryItem } from './history'
+import { addHistory, clearHistory, initHistoryStorage, renderHistory, updateHistoryItem } from './history'
 import { formatInputEventForLog, normalizeEvenInputEvent } from './input/normalizeEvenInputEvent'
 import {
   clearLocationCache,
@@ -256,6 +256,7 @@ async function main(): Promise<void> {
   initBatteryDisplay()
   const bridge = await initBridge()
   runtimeCapabilities = detectRuntimeCapabilities(Boolean(bridge))
+  await initHistoryStorage(bridge)
   updateWebConnectionFooter()
 
   if (bridge) {
