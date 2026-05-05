@@ -11,6 +11,7 @@ export interface HistoryItem {
   detail?: string
   summary?: string
   thumbnailDataUrl?: string
+  imageDataUrl?: string
   createdAt: string
 }
 
@@ -188,14 +189,17 @@ function tryWriteLocalHistory(items: HistoryItem[], reportError: boolean): boole
 
 function createLocalStorageSnapshot(items: HistoryItem[]): HistoryItem[] {
   return limitHistory(items).map((item, index) => {
-    if (item.kind === 'vision' && index < LOCAL_STORAGE_MAX_IMAGE_ITEMS) return item
+    if (item.kind === 'vision' && index < LOCAL_STORAGE_MAX_IMAGE_ITEMS) {
+      const { imageDataUrl: _imageDataUrl, ...thumbnailOnly } = item
+      return thumbnailOnly
+    }
     return stripLargeHistoryFields(item)
   })
 }
 
 function stripLargeHistoryFields(item: HistoryItem): HistoryItem {
-  if (!item.thumbnailDataUrl) return item
-  const { thumbnailDataUrl: _thumbnailDataUrl, ...rest } = item
+  if (!item.thumbnailDataUrl && !item.imageDataUrl) return item
+  const { thumbnailDataUrl: _thumbnailDataUrl, imageDataUrl: _imageDataUrl, ...rest } = item
   return rest
 }
 
@@ -291,6 +295,26 @@ function createHistoryElement(item: HistoryItem): HTMLDetailsElement {
     details.append(thumbnail)
   }
 
+  if (item.imageDataUrl) {
+    const originalButton = document.createElement('button')
+    originalButton.className = 'history-original-button'
+    originalButton.type = 'button'
+    originalButton.textContent = '查看采集照片'
+    const original = document.createElement('img')
+    original.className = 'history-original-image'
+    original.alt = item.summary || item.title || '采集照片'
+    original.src = item.imageDataUrl
+    original.loading = 'lazy'
+    original.hidden = true
+    originalButton.addEventListener('click', (event) => {
+      event.preventDefault()
+      event.stopPropagation()
+      original.hidden = !original.hidden
+      originalButton.textContent = original.hidden ? '查看采集照片' : '收起采集照片'
+    })
+    details.append(originalButton, original)
+  }
+
   if (item.summary) {
     const itemSummary = document.createElement('div')
     itemSummary.className = 'history-summary'
@@ -348,6 +372,7 @@ function createHistoryElement(item: HistoryItem): HTMLDetailsElement {
           detail: item.detail,
           summary: item.summary,
           thumbnailDataUrl: item.thumbnailDataUrl,
+          imageDataUrl: item.imageDataUrl,
         },
       }),
     )

@@ -1012,9 +1012,14 @@ async function runCaptureFlow(prompt?: string, preparedImage?: CapturedImage, op
       estimatedBytes: imageBytes,
       prompt: effectivePrompt,
     })
+    const g2PreviewBase64 = await createVisionPreviewBase64(image, 288, 144, 0.56)
+    if (g2PreviewBase64) {
+      await safeGlassImagePreview(renderer, g2PreviewBase64, '照片已采集')
+    } else {
+      await safeGlassShow(renderer, 'vision_captured', { status: '照片已拍摄，正在识别' })
+    }
 
     setStage('compress', '图片已压缩，准备上传', 35)
-    await safeShowOnG2(bridge, formatForG2('正在识别', '图片已获取\n正在请求 AI'))
     setStage('upload', '上传后端中', 52)
     const apiUrl = `${getAppConfig().apiBase.replace(/\/+$/, '')}/vision`
     setVisionImageInfo([
@@ -1054,7 +1059,8 @@ async function runCaptureFlow(prompt?: string, preparedImage?: CapturedImage, op
     lastVisionAnswer = result.answer
     lastVisionPrompt = effectivePrompt
     renderBookmarkChrome()
-    const thumbnailDataUrl = await createVisionThumbnailDataUrl(image)
+    const thumbnailDataUrl = await createVisionPreviewDataUrl(image, 240, 240, 0.62)
+    const imageDataUrl = createCapturedImageDataUrl(image)
     addHistory({
       kind: 'vision',
       title: effectivePrompt ? '天禄看图' : '拍照识别',
@@ -1063,6 +1069,7 @@ async function runCaptureFlow(prompt?: string, preparedImage?: CapturedImage, op
       detail: result.description,
       summary: result.description,
       thumbnailDataUrl,
+      imageDataUrl,
     })
     renderHistory()
     if (!prompt && effectivePrompt) clearVisionQuestionInput()
@@ -1179,6 +1186,22 @@ async function safeGlassShow(
   }
 }
 
+async function safeGlassImagePreview(renderer: GlassRenderer, imageBase64: string, caption: string): Promise<void> {
+  try {
+    await renderer.showImagePreview(imageBase64, caption)
+  } catch (error) {
+    console.warn('[P0 vision] G2 image preview failed; falling back to text confirmation.', error)
+    void recordRuntimeError(() => getAppConfig().apiBase, {
+      kind: 'glass-show',
+      message: errorToRuntimeMessage(error),
+      detail: `screen=vision_image_preview imageBase64Length=${imageBase64.length}`,
+      createdAt: new Date().toISOString(),
+      page: location.href,
+    })
+    await safeGlassShow(renderer, 'vision_captured', { status: '照片已拍摄，正在识别' })
+  }
+}
+
 function errorToRuntimeMessage(error: unknown): string {
   return error instanceof Error ? `${error.name}: ${error.message}` : String(error)
 }
@@ -1214,10 +1237,30 @@ function clearVisionQuestionInput(): void {
   if (input) input.value = ''
 }
 
-async function createVisionThumbnailDataUrl(image: CapturedImage): Promise<string | undefined> {
+function createCapturedImageDataUrl(image: CapturedImage): string | undefined {
+  return image.imageBase64 ? `data:${image.mimeType};base64,${image.imageBase64}` : undefined
+}
+
+async function createVisionPreviewBase64(
+  image: CapturedImage,
+  maxWidth: number,
+  maxHeight: number,
+  quality: number,
+): Promise<string | undefined> {
+  const dataUrl = await createVisionPreviewDataUrl(image, maxWidth, maxHeight, quality)
+  return dataUrl?.split(',')[1]
+}
+
+async function createVisionPreviewDataUrl(
+  image: CapturedImage,
+  maxWidth: number,
+  maxHeight: number,
+  quality: number,
+): Promise<string | undefined> {
   if (!image.imageBase64) return undefined
   try {
-    const sourceUrl = `data:${image.mimeType};base64,${image.imageBase64}`
+    const sourceUrl = createCapturedImageDataUrl(image)
+    if (!sourceUrl) return undefined
     const img = new Image()
     img.decoding = 'async'
     const loaded = new Promise<void>((resolve, reject) => {
@@ -1226,19 +1269,20 @@ async function createVisionThumbnailDataUrl(image: CapturedImage): Promise<strin
     })
     img.src = sourceUrl
     await loaded
-    const maxEdge = 240
-    const scale = Math.min(1, maxEdge / Math.max(img.naturalWidth || maxEdge, img.naturalHeight || maxEdge))
-    const width = Math.max(1, Math.round((img.naturalWidth || maxEdge) * scale))
-    const height = Math.max(1, Math.round((img.naturalHeight || maxEdge) * scale))
+    const sourceWidth = img.naturalWidth || maxWidth
+    const sourceHeight = img.naturalHeight || maxHeight
+    const scale = Math.min(1, maxWidth / sourceWidth, maxHeight / sourceHeight)
+    const width = Math.max(1, Math.round(sourceWidth * scale))
+    const height = Math.max(1, Math.round(sourceHeight * scale))
     const canvas = document.createElement('canvas')
     canvas.width = width
     canvas.height = height
     const context = canvas.getContext('2d')
     if (!context) return undefined
     context.drawImage(img, 0, 0, width, height)
-    return canvas.toDataURL('image/jpeg', 0.62)
+    return canvas.toDataURL('image/jpeg', quality)
   } catch (error) {
-    console.warn('[G2 history] thumbnail generation failed', error)
+    console.warn('[G2 history] preview image generation failed', error)
     return undefined
   }
 }

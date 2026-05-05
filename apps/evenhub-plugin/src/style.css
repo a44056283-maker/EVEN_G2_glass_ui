@@ -1380,7 +1380,8 @@ pre {
 }
 
 .history-replay-button,
-.history-followup-button {
+.history-followup-button,
+.history-original-button {
   min-height: 38px;
   margin: 0 12px 12px;
   padding: 0 14px;
@@ -1395,6 +1396,25 @@ pre {
   margin-left: 0;
   border-color: rgba(93, 214, 255, 0.42);
   color: var(--hud-cyan);
+}
+
+.history-original-button {
+  border-color: rgba(255, 209, 102, 0.38);
+  color: var(--hud-text);
+}
+
+.history-original-image {
+  width: calc(100% - 24px);
+  max-height: 420px;
+  margin: 0 12px 12px;
+  border: 1px solid rgba(103, 246, 232, 0.22);
+  border-radius: var(--radius-md);
+  object-fit: contain;
+  background: rgba(5, 12, 18, 0.72);
+}
+
+.history-original-image[hidden] {
+  display: none;
 }
 
 .history-detail {
