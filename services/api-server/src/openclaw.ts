@@ -86,7 +86,7 @@ export async function askOpenClaw(request: OpenClawRequest): Promise<OpenClawRes
     const data = parseOpenClawResponse(raw)
     const answer = extractOpenClawAnswer(data)
     if (!answer) throw new Error('OpenCLAW returned empty answer')
-    if (/Gateway\s*502|Gateway 暫時無法連線|Gateway 暂时无法连接/i.test(answer)) {
+    if (/Gateway\s*502|Gateway.*(timeout|aborted|无法连接|無法連線)|没有拿到有效回答|沒有拿到有效回答|请再问一次/i.test(answer)) {
       throw new Error(answer)
     }
 
@@ -100,7 +100,7 @@ export async function askOpenClaw(request: OpenClawRequest): Promise<OpenClawRes
 }
 
 function formatOpenClawHttpError(status: number, raw: string): string {
-  if (status === 401 || status === 403) return 'OpenCLAW 认证失败，请检查 OPENCLAW_GATEWAY_TOKEN'
+  if (status === 401 || status === 403) return 'OpenCLAW 认证失败，请检查 OPENCLAW_GATEWAY_TOKEN / OPENCLAW_TOKEN'
   if (status === 404) return 'OpenCLAW 未连接，请检查 OPENCLAW_BASE_URL'
   if (status === 405) return 'OpenCLAW HTTP endpoint 未启用，请检查 gateway 配置'
   return `OpenCLAW failed: ${status} ${raw.slice(0, 240)}`

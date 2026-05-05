@@ -96,6 +96,7 @@ export interface GlassScreenState {
     riskScore?: number
     totalUnrealizedPnl?: number
     openPositions?: number
+    statusText?: string
   }
 }
 
@@ -376,9 +377,10 @@ export function renderTradingMenu(state: GlassScreenState): string {
   const tabs2 = TRADING_MENU_ITEMS.slice(3, 6).map((item, i) => `[${item.label}${i + 3 === selected ? '●' : '○'}]`)
   const row1 = centerTabRow(tabs1)
   const row2 = centerTabRow(tabs2)
+  const statusText = state.extendedData?.statusText
   return [
     topBar(state.time, undefined, undefined, state.extendedData?.prices ? formatWhitelistPrices(state.extendedData.prices) : undefined),
-    '',
+    statusText ? center(statusText) : '',
     row1,
     row2,
     '',
@@ -387,16 +389,23 @@ export function renderTradingMenu(state: GlassScreenState): string {
 }
 
 export function renderTradingPrices(state: GlassScreenState): string {
-  const prices = state.extendedData?.prices ?? []
-  const priceStrip = prices.length ? formatWhitelistPrices(prices) : undefined
-  const rows = prices.slice(0, 5)
-  return [
-    topBar(state.time, undefined, undefined, priceStrip),
-    ...rows.map((p) => centerTabRow([`${p.symbol}`, `$${p.price.toFixed(p.price < 1 ? 4 : 2)}`])),
-    ...Array(Math.max(0, 5 - rows.length)).fill(''),
-    '',
-    center('↑↓ 返回   单击进入'),
-  ].join('\n')
+  const ORDER = ['BTC', 'ETH', 'SOL', 'BNB', 'DOGE']
+  const allPrices = state.extendedData?.prices ?? []
+  const bySymbol = new Map(allPrices.map((p) => [p.symbol.toUpperCase(), p]))
+
+  function formatPrice(symbol: string): string {
+    const item = bySymbol.get(symbol)
+    if (item == null) return '--'
+    if (symbol === 'DOGE') return item.price.toFixed(4)
+    if (item.price >= 1) return item.price.toFixed(2)
+    return item.price.toFixed(4)
+  }
+
+  const row1 = leftRight(`BTC ${formatPrice('BTC')}`, `ETH ${formatPrice('ETH')}`)
+  const row2 = leftRight(`SOL ${formatPrice('SOL')}`, `BNB ${formatPrice('BNB')}`)
+  const row3 = `DOGE ${formatPrice('DOGE')}`
+
+  return [topBar(state.time), state.extendedData?.statusText ? center(state.extendedData.statusText) : '', row1, row2, row3].join('\n')
 }
 
 export function renderTradingPositions(state: GlassScreenState): string {

@@ -33,6 +33,8 @@ import { formatForG2, getGlassBatteryText, setDeviceBatteryLevels, showBookmarkO
 import { getControlDirection, getControlIntent, isClickEvent } from './events'
 import { addHistory, clearHistory, renderHistory } from './history'
 import { formatInputEventForLog, normalizeEvenInputEvent } from './input/normalizeEvenInputEvent'
+import { formatLocationForPrompt, getLocationContext } from './locationContext'
+import { installRuntimeErrorReporter, recordRuntimeError } from './runtimeErrorReporter'
 import { speakResponse, speakWithBrowser, stopSpeechPlayback, unlockAudioPlayback } from './speech'
 import { GlassRenderer } from './glass/GlassRenderer'
 import { startGlassMicProbe } from './glass/glassMicProbe'
@@ -113,6 +115,9 @@ let tradingPanelActive = false
 let tradingSubPageIndex = 0 // 0=总览 1=价格 2=持仓 3=分布 4=归因 5=告警
 let inTradingMenu = true // true=显示菜单 false=显示子页面
 let lastTradingOverview: TradingReadonlyOverview | null = null
+const TRADING_CACHE_TTL_MS = 15_000
+let lastTradingFetchedAt = 0
+let tradingRefreshPromise: Promise<TradingReadonlyOverview> | undefined
 // 每个子页面独立缓存，只包含该页所需数据
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let tradingSubPageCache: Array<{ extendedData?: any; tradingState?: any } | null> = []
@@ -237,6 +242,7 @@ const pendingBatteryBySn = new Map<string, number | undefined>()
 let runtimeCapabilities: RuntimeCapabilities = detectRuntimeCapabilities(false)
 
 async function main(): Promise<void> {
+  installRuntimeErrorReporter(() => getAppConfig().apiBase)
   startWebClock()
   bindGlobalButtonFeedback()
   bindCriticalVisionEngineButton()
@@ -371,7 +377,10 @@ async function main(): Promise<void> {
       const renderer = createGlassRenderer(getBridge())
       void showTradingSubPage(1, renderer)
     } else {
-      void runAssistantQuestion('查看白名单交易对的实时价格')
+      void runTradingOverview().then(() => {
+        const renderer = createGlassRenderer(getBridge())
+        void showTradingSubPage(1, renderer)
+      })
     }
   })
   document.querySelector<HTMLButtonElement>('#trading-preset-positions')?.addEventListener('click', () => {
@@ -381,7 +390,10 @@ async function main(): Promise<void> {
       const renderer = createGlassRenderer(getBridge())
       void showTradingSubPage(2, renderer)
     } else {
-      void runAssistantQuestion('查看当前持仓明细和浮动盈亏')
+      void runTradingOverview().then(() => {
+        const renderer = createGlassRenderer(getBridge())
+        void showTradingSubPage(2, renderer)
+      })
     }
   })
   document.querySelector<HTMLButtonElement>('#trading-preset-risk')?.addEventListener('click', () => {
@@ -391,7 +403,10 @@ async function main(): Promise<void> {
       const renderer = createGlassRenderer(getBridge())
       void showTradingSubPage(5, renderer)
     } else {
-      void runAssistantQuestion('查看当前交易系统风险评分和告警')
+      void runTradingOverview().then(() => {
+        const renderer = createGlassRenderer(getBridge())
+        void showTradingSubPage(5, renderer)
+      })
     }
   })
   document.querySelector<HTMLButtonElement>('#trading-preset-distribution')?.addEventListener('click', () => {
@@ -401,7 +416,10 @@ async function main(): Promise<void> {
       const renderer = createGlassRenderer(getBridge())
       void showTradingSubPage(3, renderer)
     } else {
-      void runAssistantQuestion('查看 M1-M5 各级别资金流向和持仓集中度')
+      void runTradingOverview().then(() => {
+        const renderer = createGlassRenderer(getBridge())
+        void showTradingSubPage(3, renderer)
+      })
     }
   })
   document.querySelector<HTMLButtonElement>('#trading-preset-attribution')?.addEventListener('click', () => {
@@ -411,7 +429,10 @@ async function main(): Promise<void> {
       const renderer = createGlassRenderer(getBridge())
       void showTradingSubPage(4, renderer)
     } else {
-      void runAssistantQuestion('查看真实订单样本统计、胜率、平均盈亏')
+      void runTradingOverview().then(() => {
+        const renderer = createGlassRenderer(getBridge())
+        void showTradingSubPage(4, renderer)
+      })
     }
   })
   document.querySelector<HTMLButtonElement>('#openclaw-record-action')?.addEventListener('click', () => {
@@ -907,17 +928,18 @@ async function handleG2ControlEvent(event: EvenHubEvent): Promise<void> {
     }
     if (intent === 'next') {
       tradingSubPageIndex = (tradingSubPageIndex + 1) % 6
-      await renderer.show('trading_menu', { activeIndex: tradingSubPageIndex })
+      inTradingMenu = true
+      await renderer.show('trading_menu', { activeIndex: tradingSubPageIndex, extendedData: getTradingMenuExtendedData(isTradingCacheFresh() ? undefined : '显示上次缓存') })
       return
     }
     if (intent === 'previous') {
       tradingSubPageIndex = (tradingSubPageIndex - 1 + 6) % 6
-      await renderer.show('trading_menu', { activeIndex: tradingSubPageIndex })
+      inTradingMenu = true
+      await renderer.show('trading_menu', { activeIndex: tradingSubPageIndex, extendedData: getTradingMenuExtendedData(isTradingCacheFresh() ? undefined : '显示上次缓存') })
       return
     }
     if (intent === 'click') {
-      inTradingMenu = false
-      await showTradingSubPage(tradingSubPageIndex, renderer)
+      await showTradingSubPage(tradingSubPageIndex, renderer, { forceRefresh: !inTradingMenu })
       return
     }
     return
@@ -979,6 +1001,7 @@ async function runCaptureFlow(prompt?: string, preparedImage?: CapturedImage, op
       `data length：${image.imageBase64.length}`,
       `capture：${new Date().toLocaleTimeString('zh-CN')}`,
     ].join('\n'))
+    await safeGlassShow(renderer, 'vision_captured', { status: '照片已拍摄，正在识别' })
     console.info('[P0 vision] image ready', {
       dataUrlLength: image.imageBase64.length,
       estimatedBytes: imageBytes,
@@ -994,7 +1017,7 @@ async function runCaptureFlow(prompt?: string, preparedImage?: CapturedImage, op
       `上传接口：${apiUrl}`,
       '状态：正在上传',
     ].join('\n'))
-	    console.info('[P0 vision] upload start', {
+    console.info('[P0 vision] upload start', {
 	      apiUrl,
 	      imageBase64Length: image.imageBase64.length,
 	      estimatedBytes: imageBytes,
@@ -1002,7 +1025,19 @@ async function runCaptureFlow(prompt?: string, preparedImage?: CapturedImage, op
 	      startedAt: new Date().toISOString(),
 	    })
     setStage('vision', 'MiniMax 正在识别画面', 72)
-    const result = await recognizeImage(image, effectivePrompt || undefined)
+    const config = getAppConfig()
+    const location = await getLocationContext(config.enableLocationContext)
+    const capturedAt = new Date().toISOString()
+    const recentVisionContext = [
+      lastVisionPrompt ? `上次问题：${lastVisionPrompt}` : '',
+      lastVisionSummary ? `上次画面：${lastVisionSummary}` : '',
+      lastVisionAnswer ? `上次回答：${lastVisionAnswer}` : '',
+    ].filter(Boolean).join('\n')
+    const result = await recognizeImage(image, effectivePrompt || undefined, {
+      capturedAt,
+      locationContext: formatLocationForPrompt(location),
+      recentVisionContext,
+    })
     const elapsedMs = Math.round(performance.now() - requestStartedAt)
     console.info('[P0 vision] upload success', {
       elapsedMs,
@@ -1014,12 +1049,15 @@ async function runCaptureFlow(prompt?: string, preparedImage?: CapturedImage, op
     lastVisionAnswer = result.answer
     lastVisionPrompt = effectivePrompt
     renderBookmarkChrome()
+    const thumbnailDataUrl = await createVisionThumbnailDataUrl(image)
     addHistory({
       kind: 'vision',
       title: effectivePrompt ? '天禄看图' : '拍照识别',
       input: effectivePrompt || undefined,
       answer: result.answer,
       detail: result.description,
+      summary: result.description,
+      thumbnailDataUrl,
     })
     renderHistory()
     if (!prompt && effectivePrompt) clearVisionQuestionInput()
@@ -1105,6 +1143,13 @@ async function safeShowOnG2(bridge: ReturnType<typeof getBridge>, content: strin
     await showOnG2(bridge, content)
   } catch (error) {
     console.warn('[P0 vision] G2 display failed but web result continues.', error)
+    void recordRuntimeError(() => getAppConfig().apiBase, {
+      kind: 'g2-display',
+      message: errorToRuntimeMessage(error),
+      detail: `content=${content.slice(0, 500)}`,
+      createdAt: new Date().toISOString(),
+      page: location.href,
+    })
     setVoiceStatus('G2 显示失败，但网页结果会继续生成。')
   }
 }
@@ -1118,7 +1163,26 @@ async function safeGlassShow(
     await renderer.show(screen, state)
   } catch (error) {
     console.warn('[P0 vision] GlassRenderer show failed but web result continues.', error)
+    void recordRuntimeError(() => getAppConfig().apiBase, {
+      kind: 'glass-show',
+      message: errorToRuntimeMessage(error),
+      detail: `screen=${String(screen)} state=${safeRuntimeJson(state)}`,
+      createdAt: new Date().toISOString(),
+      page: location.href,
+    })
     setVoiceStatus('G2 显示失败，但网页结果已生成。')
+  }
+}
+
+function errorToRuntimeMessage(error: unknown): string {
+  return error instanceof Error ? `${error.name}: ${error.message}` : String(error)
+}
+
+function safeRuntimeJson(value: unknown): string {
+  try {
+    return JSON.stringify(value).slice(0, 800)
+  } catch {
+    return String(value).slice(0, 800)
   }
 }
 
@@ -1143,6 +1207,35 @@ function getVisionQuestionInput(): string {
 function clearVisionQuestionInput(): void {
   const input = document.querySelector<HTMLTextAreaElement>('#vision-question-input')
   if (input) input.value = ''
+}
+
+async function createVisionThumbnailDataUrl(image: CapturedImage): Promise<string | undefined> {
+  if (!image.imageBase64) return undefined
+  try {
+    const sourceUrl = `data:${image.mimeType};base64,${image.imageBase64}`
+    const img = new Image()
+    img.decoding = 'async'
+    const loaded = new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve()
+      img.onerror = () => reject(new Error('thumbnail image decode failed'))
+    })
+    img.src = sourceUrl
+    await loaded
+    const maxEdge = 240
+    const scale = Math.min(1, maxEdge / Math.max(img.naturalWidth || maxEdge, img.naturalHeight || maxEdge))
+    const width = Math.max(1, Math.round((img.naturalWidth || maxEdge) * scale))
+    const height = Math.max(1, Math.round((img.naturalHeight || maxEdge) * scale))
+    const canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+    const context = canvas.getContext('2d')
+    if (!context) return undefined
+    context.drawImage(img, 0, 0, width, height)
+    return canvas.toDataURL('image/jpeg', 0.62)
+  } catch (error) {
+    console.warn('[G2 history] thumbnail generation failed', error)
+    return undefined
+  }
 }
 
 async function askVisionFollowup(question: string, source = 'vision-followup'): Promise<void> {
@@ -2081,41 +2174,75 @@ function isInvalidTianluAnswer(answer: string): boolean {
 // 交易子页面辅助函数：显示6个交易分类页面
 const TRADING_SUB_PAGES = ['trading_status', 'trading_prices', 'trading_positions', 'trading_distribution', 'trading_attribution', 'trading_alerts'] as const
 
+function populateTradingCache(overview: TradingReadonlyOverview): void {
+  lastTradingOverview = overview
+  lastTradingFetchedAt = Date.now()
+  const live = overview.live
+  tradingSubPageCache = [
+    { tradingState: buildTradingState(live) },
+    { extendedData: { prices: live?.whitelistPrices?.map((p) => ({ symbol: p.symbol, pair: p.pair, price: p.price, freshness: p.freshness })) } },
+    { extendedData: { positions: live?.openPositionPairs?.map((p) => ({ pair: p.pair, pnl: p.pnl, notional: p.notional, share: p.share, maxLeverage: p.maxLeverage })), totalUnrealizedPnl: live?.totalUnrealizedPnl, openPositions: live?.openPositions } },
+    { extendedData: { distribution: live?.pairConcentration?.map((d) => ({ pair: d.pair, share: d.share * 100, pnl: d.pnl })) } },
+    { extendedData: { attribution: live?.attribution ? { winRatePct: live.attribution.winRatePct, avgRealizedPnlPct: live.attribution.avgRealizedPnlPct, avgUnrealizedPnlPct: live.attribution.avgUnrealizedPnlPct, sampleCount: live.attribution.sampleCount } : undefined } },
+    { extendedData: { alerts: live?.alarms?.map((a) => ({ level: a.level, message: a.message, action: a.action })) } },
+  ]
+}
+
+function isTradingCacheFresh(): boolean {
+  return Boolean(lastTradingOverview && Date.now() - lastTradingFetchedAt < TRADING_CACHE_TTL_MS)
+}
+
+async function refreshTradingOverviewCache(): Promise<TradingReadonlyOverview> {
+  if (!tradingRefreshPromise) {
+    tradingRefreshPromise = getTradingOverview()
+      .then((overview) => {
+        populateTradingCache(overview)
+        return overview
+      })
+      .finally(() => {
+        tradingRefreshPromise = undefined
+      })
+  }
+  return tradingRefreshPromise
+}
+
+function getTradingMenuExtendedData(statusText?: string): { prices?: Array<{ symbol: string; pair: string; price: number; freshness?: string }>; statusText?: string } {
+  const prices = lastTradingOverview?.live?.whitelistPrices?.map((p) => ({ symbol: p.symbol, pair: p.pair, price: p.price, freshness: p.freshness }))
+  return { prices, statusText }
+}
+
 // 各子页面独立拉取数据
-async function showTradingSubPage(index: number, renderer: GlassRenderer): Promise<void> {
+async function showTradingSubPage(index: number, renderer: GlassRenderer, options: { forceRefresh?: boolean } = {}): Promise<void> {
   const currentIndex = index
   if (switchingSubPage) return
   switchingSubPage = true
   tradingSubPageIndex = currentIndex
+  inTradingMenu = false
 
   try {
     const screenId = TRADING_SUB_PAGES[currentIndex]!
+    const hasCache = Boolean(tradingSubPageCache[currentIndex])
 
-    // 从缓存读取，无缓存则立即拉取
-    if (!tradingSubPageCache[currentIndex]) {
+    if (!hasCache) {
+      await renderer.show('trading_menu', { activeIndex: currentIndex, extendedData: getTradingMenuExtendedData('正在载入交易数据') })
       try {
-        const overview = await getTradingOverview()
-        lastTradingOverview = overview
-        const live = overview.live
-        tradingSubPageCache = [
-          { tradingState: buildTradingState(live) },
-          { extendedData: { prices: live?.whitelistPrices?.map((p) => ({ symbol: p.symbol, pair: p.pair, price: p.price, freshness: p.freshness })) } },
-          { extendedData: { positions: live?.openPositionPairs?.map((p) => ({ pair: p.pair, pnl: p.pnl, notional: p.notional, share: p.share, maxLeverage: p.maxLeverage })), totalUnrealizedPnl: live?.totalUnrealizedPnl, openPositions: live?.openPositions } },
-          { extendedData: { distribution: live?.pairConcentration?.map((d) => ({ pair: d.pair, share: d.share * 100, pnl: d.pnl })) } },
-          { extendedData: { attribution: live?.attribution ? { winRatePct: live.attribution.winRatePct, avgRealizedPnlPct: live.attribution.avgRealizedPnlPct, avgUnrealizedPnlPct: live.attribution.avgUnrealizedPnlPct, sampleCount: live.attribution.sampleCount } : undefined } },
-          { extendedData: { alerts: live?.alarms?.map((a) => ({ level: a.level, message: a.message, action: a.action })) } },
-        ]
+        await refreshTradingOverviewCache()
       } catch {
         tradingSubPageCache[currentIndex] = {}
       }
+    } else if (options.forceRefresh || !isTradingCacheFresh()) {
+      const staleCache = tradingSubPageCache[currentIndex] ?? {}
+      await showTradingScreen(renderer, screenId, staleCache, '显示上次缓存 · 刷新中')
+      void refreshTradingOverviewCache().then(() => {
+        if (activeGlassPage === 'trading' && tradingSubPageIndex === currentIndex) {
+          void showTradingScreen(renderer, screenId, tradingSubPageCache[currentIndex] ?? {}, undefined)
+          renderPhoneTradingSubPage(currentIndex, tradingSubPageCache[currentIndex] ?? {})
+        }
+      }).catch(() => undefined)
     }
 
     const cache = tradingSubPageCache[currentIndex] ?? {}
-    if (screenId === 'trading_status') {
-      await renderer.show('trading_status', { trading: cache.tradingState })
-    } else {
-      await renderer.show(screenId as 'trading_prices' | 'trading_positions' | 'trading_distribution' | 'trading_attribution' | 'trading_alerts', { extendedData: cache.extendedData })
-    }
+    await showTradingScreen(renderer, screenId, cache, undefined)
 
     // 更新手机网页面板
     renderPhoneTradingSubPage(currentIndex, cache)
@@ -2126,6 +2253,20 @@ async function showTradingSubPage(index: number, renderer: GlassRenderer): Promi
     await speakIfEnabled(aiComment)
   } finally {
     switchingSubPage = false
+  }
+}
+
+async function showTradingScreen(
+  renderer: GlassRenderer,
+  screenId: (typeof TRADING_SUB_PAGES)[number],
+  cache: { extendedData?: any; tradingState?: any },
+  statusText?: string,
+): Promise<void> {
+  const extendedData = { ...(cache.extendedData ?? {}), statusText }
+  if (screenId === 'trading_status') {
+    await renderer.show('trading_status', { trading: cache.tradingState, extendedData })
+  } else {
+    await renderer.show(screenId as 'trading_prices' | 'trading_positions' | 'trading_distribution' | 'trading_attribution' | 'trading_alerts', { extendedData })
   }
 }
 
@@ -2226,23 +2367,15 @@ async function runTradingOverview(): Promise<void> {
     tradingPanelActive = true
     button?.setAttribute('disabled', 'true')
     refreshButton?.setAttribute('disabled', 'true')
-    await renderer.show('trading_menu', { activeIndex: 0 })
+    await renderer.show('trading_menu', {
+      activeIndex: 0,
+      extendedData: getTradingMenuExtendedData(lastTradingOverview ? '显示上次缓存 · 刷新中' : '正在载入交易数据'),
+    })
 
-    const overview = await getTradingOverview()
-    lastTradingOverview = overview
+    const overview = isTradingCacheFresh() ? lastTradingOverview! : await refreshTradingOverviewCache()
     const summary = formatTradingOverviewSummary(overview)
     setTradingMode(overview.mode === 'live-readonly' ? '实时只读已开启' : '记忆只读模式')
     setTradingSummary('数据已就绪，请选择分类查看')
-    // 预填充所有子页面缓存
-    const live = overview.live
-    tradingSubPageCache = [
-      { tradingState: buildTradingState(live) },
-      { extendedData: { prices: live?.whitelistPrices?.map((p) => ({ symbol: p.symbol, pair: p.pair, price: p.price, freshness: p.freshness })) } },
-      { extendedData: { positions: live?.openPositionPairs?.map((p) => ({ pair: p.pair, pnl: p.pnl, notional: p.notional, share: p.share, maxLeverage: p.maxLeverage })), totalUnrealizedPnl: live?.totalUnrealizedPnl, openPositions: live?.openPositions } },
-      { extendedData: { distribution: live?.pairConcentration?.map((d) => ({ pair: d.pair, share: d.share * 100, pnl: d.pnl })) } },
-      { extendedData: { attribution: live?.attribution ? { winRatePct: live.attribution.winRatePct, avgRealizedPnlPct: live.attribution.avgRealizedPnlPct, avgUnrealizedPnlPct: live.attribution.avgUnrealizedPnlPct, sampleCount: live.attribution.sampleCount } : undefined } },
-      { extendedData: { alerts: live?.alarms?.map((a) => ({ level: a.level, message: a.message, action: a.action })) } },
-    ]
     addHistory({
       kind: 'trading',
       title: '交易只读概览',
@@ -2250,6 +2383,13 @@ async function runTradingOverview(): Promise<void> {
       answer: summary,
     })
     renderHistory()
+    // Re-render glass with populated cache so price strip shows immediately
+    if (lastTradingOverview?.live?.whitelistPrices?.length) {
+      await renderer.show('trading_menu', {
+        activeIndex: tradingSubPageIndex,
+        extendedData: getTradingMenuExtendedData(),
+      })
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     setTradingMode('刷新失败')
@@ -2727,7 +2867,8 @@ function bindConfigPanel(): void {
     const g2RecordMs = Number(document.querySelector<HTMLInputElement>('#config-record-ms')?.value)
     const autoSpeak = Boolean(document.querySelector<HTMLInputElement>('#config-auto-speak')?.checked)
     const autoListenOnStart = Boolean(document.querySelector<HTMLInputElement>('#config-auto-listen')?.checked)
-    const config = saveAppConfig({ apiBase, ttsVoiceId, g2RecordMs, autoSpeak, autoListenOnStart })
+    const enableLocationContext = Boolean(document.querySelector<HTMLInputElement>('#config-location-context')?.checked)
+    const config = saveAppConfig({ apiBase, ttsVoiceId, g2RecordMs, autoSpeak, autoListenOnStart, enableLocationContext })
     renderConfigPanel(config)
     setConfigStatus('已保存，本机立即生效')
     if (config.autoListenOnStart) void startAutoVoiceDetection()
@@ -2780,12 +2921,14 @@ function renderConfigPanel(config = getAppConfig()): void {
   const recordMs = document.querySelector<HTMLInputElement>('#config-record-ms')
   const autoSpeak = document.querySelector<HTMLInputElement>('#config-auto-speak')
   const autoListen = document.querySelector<HTMLInputElement>('#config-auto-listen')
+  const locationContext = document.querySelector<HTMLInputElement>('#config-location-context')
 
   if (apiBase) apiBase.value = config.apiBase
   if (ttsVoice) ttsVoice.value = config.ttsVoiceId
   if (recordMs) recordMs.value = String(config.g2RecordMs)
   if (autoSpeak) autoSpeak.checked = config.autoSpeak
   if (autoListen) autoListen.checked = config.autoListenOnStart
+  if (locationContext) locationContext.checked = config.enableLocationContext
   updateTtsStatusDisplay()
 }
 

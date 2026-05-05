@@ -21,6 +21,7 @@ import { describeImage } from '@g2vva/vision-adapter'
 import dotenv from 'dotenv'
 import Fastify from 'fastify'
 import { existsSync } from 'node:fs'
+import { appendFile, mkdir } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { askOpenClaw, getOpenClawPublicStatus } from './openclaw.js'
@@ -42,6 +43,25 @@ const app = Fastify({
   bodyLimit: 12 * 1024 * 1024,
 })
 const port = Number(process.env.PORT ?? 8787)
+const runtimeErrorLogPath = resolve(here, '../../../docs/gpt-advisor/logs/runtime-errors.jsonl')
+
+interface RuntimeErrorLogRequest {
+  kind?: unknown
+  message?: unknown
+  detail?: unknown
+  createdAt?: unknown
+  page?: unknown
+}
+
+interface RuntimeErrorLogEntry {
+  receivedAt: string
+  kind: string
+  message: string
+  detail?: string
+  createdAt?: string
+  page?: string
+  source: 'evenhub-plugin'
+}
 
 app.addContentTypeParser('text/plain', { parseAs: 'string' }, (_request, body, done) => {
   try {
@@ -65,28 +85,40 @@ app.get('/health', async () => ({
   openclaw: getOpenClawPublicStatus(),
 }))
 
+app.post<{ Body: RuntimeErrorLogRequest; Reply: { ok: true } }>('/debug/runtime-error', async (request) => {
+  const entry = sanitizeRuntimeErrorLog(request.body)
+  await appendRuntimeErrorLog(entry)
+  return { ok: true }
+})
+
 app.post<{ Body: VisionRequest; Reply: VisionResponse }>('/vision', async (request) => {
   const startedAt = Date.now()
   const vision = await describeImage(request.body)
+  const needsClarification = shouldClarifyVision(vision.description, vision.confidence)
   const answer = await askMiniMax({
     locale: request.body.locale,
-    user: [
-      '请把下面的画面描述整理成适合 Even G2 眼镜小屏幕显示的中文短回答。',
-      '要求：最多 4 行；先说重点；不要写成营销文案；看不清就明确说看不清。',
-      `画面描述：${vision.description}`,
-      request.body.prompt ? `用户问题：${request.body.prompt}` : '',
-    ]
-      .filter(Boolean)
-      .join('\n'),
+    system: needsClarification
+      ? [
+          '你是 Even G2 眼镜视觉复核助手。只输出最终中文短回答，不要输出推理过程。',
+          '画面低置信度或看不清时，必须先澄清不确定点，再给出能确认的内容或建议重新拍摄。',
+          '不要把本次视觉结果写入知识库或承诺稍后保存。',
+        ].join('\n')
+      : undefined,
+    user: buildVisionAnswerPrompt(request.body, vision.description, {
+      confidence: vision.confidence,
+      needsClarification,
+    }),
   })
 
   return {
     description: vision.description,
-    answer,
-    provider: `vision:${vision.provider}+llm`,
+    answer: sanitizeDirectAnswer(answer),
+    provider: `vision:${vision.provider}+${needsClarification ? 'llm-review' : 'llm'}`,
     source: 'vision-api',
     elapsedMs: Date.now() - startedAt,
     createdAt: new Date().toISOString(),
+    confidence: vision.confidence,
+    needsClarification,
   }
 })
 
@@ -215,6 +247,37 @@ function messageToBuffer(message: Buffer | ArrayBuffer | Buffer[]): Buffer {
   if (Buffer.isBuffer(message)) return message
   if (Array.isArray(message)) return Buffer.concat(message)
   return Buffer.from(message)
+}
+
+function buildVisionAnswerPrompt(
+  request: VisionRequest,
+  description: string,
+  options: { confidence?: number; needsClarification: boolean },
+): string {
+  return [
+    options.needsClarification
+      ? '请复核下面的视觉识别结果，生成澄清式短回答。'
+      : '请把下面的画面描述整理成适合 Even G2 眼镜小屏幕显示的中文短回答。',
+    '要求：最多 4 行；先说重点；不要写成营销文案；看不清就明确说看不清。',
+    '位置、近期画面和拍摄时间只能作为辅助上下文，不能替代图片中实际可见内容。',
+    '不要自动写入知识库，不要承诺保存或异步同步。',
+    request.capturedAt ? `拍摄时间：${request.capturedAt}` : '',
+    request.locationContext ? `位置上下文：${request.locationContext}` : '',
+    request.recentVisionContext ? `近期视觉上下文：${request.recentVisionContext}` : '',
+    typeof options.confidence === 'number' ? `视觉置信度：${options.confidence}` : '',
+    `画面描述：${description}`,
+    request.prompt ? `用户问题：${request.prompt}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n')
+}
+
+function shouldClarifyVision(description: string, confidence?: number): boolean {
+  if (typeof confidence === 'number') {
+    const normalizedConfidence = confidence > 1 ? confidence / 100 : confidence
+    if (normalizedConfidence < 0.55) return true
+  }
+  return /看不清|无法看清|不清楚|无法确认|不能确定|不确定|模糊|遮挡|曝光不足|太暗|过曝|识别不到|没有返回/.test(description)
 }
 
 async function answerQuestion(question: string, lastVisionSummary?: string, locale?: string): Promise<AskResponse> {
@@ -507,8 +570,17 @@ app.post<{ Body: AskRequest; Reply: AskResponse }>('/openclaw/ask', async (reque
     }
   }
 
+  const answer = sanitizeDirectAnswer(openClaw.answer)
+  if (isGenericNoAnswer(answer)) {
+    return {
+      answer,
+      provider: 'openclaw:unavailable',
+      createdAt: new Date().toISOString(),
+    }
+  }
+
   return {
-    answer: sanitizeDirectAnswer(openClaw.answer),
+    answer,
     provider: openClaw.provider,
     createdAt: new Date().toISOString(),
   }
@@ -566,6 +638,55 @@ function isInvalidDirectAnswer(answer: string): boolean {
 
 function isGenericNoAnswer(answer: string): boolean {
   return /天禄没有拿到有效回答|没有拿到有效回答|请再问一次/.test(answer)
+}
+
+async function appendRuntimeErrorLog(entry: RuntimeErrorLogEntry): Promise<void> {
+  await mkdir(dirname(runtimeErrorLogPath), { recursive: true })
+  await appendFile(runtimeErrorLogPath, `${JSON.stringify(entry)}\n`, 'utf8')
+}
+
+function sanitizeRuntimeErrorLog(body: RuntimeErrorLogRequest | undefined): RuntimeErrorLogEntry {
+  const payload = body && typeof body === 'object' ? body : {}
+  const kind = sanitizeRuntimeKind(payload.kind)
+  const message = sanitizeRuntimeText(payload.message, 'runtime error', 800)
+  const detail = sanitizeRuntimeText(payload.detail, '', 1200)
+  const createdAt = sanitizeRuntimeText(payload.createdAt, '', 80)
+  const page = sanitizeRuntimePage(payload.page)
+
+  return {
+    receivedAt: new Date().toISOString(),
+    kind,
+    message,
+    ...(detail ? { detail } : {}),
+    ...(createdAt ? { createdAt } : {}),
+    ...(page ? { page } : {}),
+    source: 'evenhub-plugin',
+  }
+}
+
+function sanitizeRuntimeKind(value: unknown): string {
+  const kind = typeof value === 'string' ? value : ''
+  if (['error', 'unhandledrejection', 'glass-show', 'g2-display'].includes(kind)) return kind
+  return 'error'
+}
+
+function sanitizeRuntimeText(value: unknown, fallback: string, maxLength: number): string {
+  const text = typeof value === 'string' ? value : fallback
+  return redactRuntimeText(text).slice(0, maxLength)
+}
+
+function sanitizeRuntimePage(value: unknown): string | undefined {
+  if (typeof value !== 'string' || !value) return undefined
+  return redactRuntimeText(value.replace(/[?#].*$/, '')).slice(0, 300)
+}
+
+function redactRuntimeText(text: string): string {
+  return text
+    .replace(/(sk-[A-Za-z0-9_-]{12,})/g, '<redacted-key>')
+    .replace(/(Bearer\s+)[A-Za-z0-9._-]+/gi, '$1<redacted-token>')
+    .replace(/([?&](?:token|key|api_key|apikey|password|secret)=)[^&#\s]+/gi, '$1<redacted>')
+    .replace(/((?:authorization|api[_-]?key|token|password|secret)\s*[:=]\s*)[^\s,;]+/gi, '$1<redacted>')
+    .replace(/data:image\/[a-z0-9.+-]+;base64,[A-Za-z0-9+/=]+/gi, 'data:image/<redacted>;base64,<redacted>')
 }
 
 function buildLocalGeneralFallback(question: string): string {

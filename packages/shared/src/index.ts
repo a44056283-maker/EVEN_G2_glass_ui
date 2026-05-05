@@ -5,6 +5,9 @@ export interface VisionRequest {
   mimeType?: 'image/jpeg' | 'image/png' | string
   prompt?: string
   locale?: LocaleCode
+  capturedAt?: string
+  locationContext?: string
+  recentVisionContext?: string
 }
 
 export interface VisionResponse {
@@ -14,6 +17,8 @@ export interface VisionResponse {
   createdAt: string
   source?: string
   elapsedMs?: number
+  confidence?: number
+  needsClarification?: boolean
 }
 
 export interface AskRequest {

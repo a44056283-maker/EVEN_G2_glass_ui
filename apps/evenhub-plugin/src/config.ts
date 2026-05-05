@@ -4,6 +4,7 @@ export interface AppConfig {
   g2RecordMs: number
   autoSpeak: boolean
   autoListenOnStart: boolean
+  enableLocationContext: boolean
 }
 
 export const defaultConfig: AppConfig = {
@@ -12,6 +13,7 @@ export const defaultConfig: AppConfig = {
   g2RecordMs: 120000,
   autoSpeak: true,
   autoListenOnStart: false,
+  enableLocationContext: false,
 }
 
 const storageKey = 'g2-vva-config-v2'
@@ -48,6 +50,7 @@ function normalizeConfig(config: Partial<AppConfig>): AppConfig {
     g2RecordMs,
     autoSpeak: config.autoSpeak ?? defaultConfig.autoSpeak,
     autoListenOnStart: config.autoListenOnStart ?? defaultConfig.autoListenOnStart,
+    enableLocationContext: config.enableLocationContext ?? defaultConfig.enableLocationContext,
   }
 }
 

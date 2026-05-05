@@ -1,3 +1,5 @@
+import { clearIndexedHistory, loadIndexedHistory, saveIndexedHistory } from './historyStore'
+
 export type HistoryKind = 'vision' | 'voice' | 'trading' | 'openclaw' | 'settings'
 
 export interface HistoryItem {
@@ -7,6 +9,8 @@ export interface HistoryItem {
   input?: string
   answer: string
   detail?: string
+  summary?: string
+  thumbnailDataUrl?: string
   createdAt: string
 }
 
@@ -16,35 +20,75 @@ const MAX_KIND_HISTORY: Partial<Record<HistoryKind, number>> = {
   voice: 15,
 }
 
+let lastHistoryError = ''
+let memoryHistoryFallback: HistoryItem[] = []
+let cachedHistory: HistoryItem[] = []
+let storageMode: 'indexeddb' | 'localstorage' | 'memory' = 'memory'
+let loadStarted = false
+let loadFinished = false
+let saveQueue: Promise<void> = Promise.resolve()
+let historyVersion = 0
+let renderQueued = false
+
+export function getLastHistoryError(): string {
+  return lastHistoryError
+}
+
 export function addHistory(item: Omit<HistoryItem, 'id' | 'createdAt'>): HistoryItem {
   const historyItem: HistoryItem = {
     ...item,
     id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
     createdAt: new Date().toISOString(),
   }
-  const next = limitHistory([historyItem, ...getHistory()])
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+  const currentHistory = getHistory()
+  const next = limitHistory([historyItem, ...currentHistory])
+  cachedHistory = next
+  memoryHistoryFallback = next.slice(0, MAX_HISTORY)
+  historyVersion += 1
+  persistHistory(next)
   return historyItem
 }
 
 export function getHistory(): HistoryItem[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
+  if (!loadStarted) {
+    loadStarted = true
+    cachedHistory = readLocalHistory()
+    memoryHistoryFallback = cachedHistory
+    void hydrateHistoryFromIndexedDb()
   }
+  if (cachedHistory.length) return cachedHistory
+  if (memoryHistoryFallback.length) return memoryHistoryFallback
+  cachedHistory = readLocalHistory()
+  memoryHistoryFallback = cachedHistory
+  return cachedHistory
 }
 
 export function clearHistory(): void {
-  localStorage.removeItem(STORAGE_KEY)
+  cachedHistory = []
+  memoryHistoryFallback = []
+  lastHistoryError = ''
+  historyVersion += 1
+  try {
+    localStorage.removeItem(STORAGE_KEY)
+  } catch (error) {
+    reportHistoryError('localStorage 清空失败', error)
+  }
+  saveQueue = saveQueue
+    .then(() => clearIndexedHistory())
+    .then(() => {
+      storageMode = 'indexeddb'
+    })
+    .catch((error) => {
+      storageMode = storageMode === 'indexeddb' ? 'localstorage' : storageMode
+      reportHistoryError('IndexedDB 清空失败', error)
+    })
 }
 
 export function renderHistory(): void {
   const scopedLists = document.querySelectorAll<HTMLDivElement>('[data-history-list]')
   if (scopedLists.length === 0) return
+
+  if (!loadFinished) void hydrateHistoryFromIndexedDb()
 
   const items = getHistory()
   for (const list of scopedLists) {
@@ -53,12 +97,133 @@ export function renderHistory(): void {
     if (kind && kind !== 'all') {
       filtered = filtered.slice(0, MAX_KIND_HISTORY[kind] ?? MAX_HISTORY)
     }
+    const children: HTMLElement[] = []
+    if (lastHistoryError) children.push(createHistoryErrorElement())
     if (filtered.length === 0) {
-      list.innerHTML = '<div class="history-empty">暂无历史记录</div>'
-      continue
+      children.push(createHistoryEmptyElement())
+    } else {
+      children.push(...filtered.map(createHistoryElement))
     }
-    list.replaceChildren(...filtered.map(createHistoryElement))
+    list.replaceChildren(...children)
   }
+}
+
+function readLocalHistory(): HistoryItem[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return memoryHistoryFallback.length ? memoryHistoryFallback : []
+    const parsed = JSON.parse(raw)
+    return normalizeHistoryItems(parsed)
+  } catch {
+    return memoryHistoryFallback.length ? memoryHistoryFallback : []
+  }
+}
+
+async function hydrateHistoryFromIndexedDb(): Promise<void> {
+  loadStarted = true
+  if (loadFinished && storageMode === 'indexeddb') return
+  const versionAtStart = historyVersion
+  try {
+    const indexedHistory = limitHistory(normalizeHistoryItems(await loadIndexedHistory()))
+    const localHistory = readLocalHistory()
+    const loadedHistory = indexedHistory.length ? indexedHistory : localHistory
+    const next = versionAtStart === historyVersion ? loadedHistory : mergeHistory(cachedHistory, loadedHistory)
+    cachedHistory = next
+    memoryHistoryFallback = next
+    loadFinished = true
+    storageMode = 'indexeddb'
+    lastHistoryError = ''
+    if (!indexedHistory.length && localHistory.length && versionAtStart === historyVersion) await saveIndexedHistory(localHistory)
+    renderHistory()
+  } catch (error) {
+    loadFinished = true
+    const localHistory = readLocalHistory()
+    const next = versionAtStart === historyVersion ? localHistory : mergeHistory(cachedHistory, localHistory)
+    cachedHistory = next
+    memoryHistoryFallback = next
+    storageMode = localHistory.length ? 'localstorage' : 'memory'
+    reportHistoryError('IndexedDB 读取失败，已切换备用存储', error)
+    renderHistory()
+  }
+}
+
+function persistHistory(items: HistoryItem[]): void {
+  memoryHistoryFallback = items.slice(0, MAX_HISTORY)
+  saveQueue = saveQueue
+    .then(async () => {
+      await saveIndexedHistory(items)
+      storageMode = 'indexeddb'
+      lastHistoryError = ''
+      tryRemoveLocalHistory()
+    })
+    .catch((error) => {
+      reportHistoryError('IndexedDB 写入失败，尝试 localStorage 备用', error)
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+        storageMode = 'localstorage'
+      } catch (localError) {
+        storageMode = 'memory'
+        reportHistoryError('历史保存失败，已仅保存在内存', localError)
+      }
+    })
+}
+
+function tryRemoveLocalHistory(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY)
+  } catch {
+    // IndexedDB is primary, so a stale localStorage cleanup failure is non-fatal.
+  }
+}
+
+function reportHistoryError(prefix: string, error: unknown): void {
+  const message = error instanceof Error ? error.message : String(error)
+  lastHistoryError = `${prefix}：${message}`
+  console.warn('[G2 history]', lastHistoryError, error)
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('g2vva:history-error', { detail: { error: lastHistoryError, storageMode } }))
+  }
+  queueHistoryRender()
+}
+
+function normalizeHistoryItems(value: unknown): HistoryItem[] {
+  if (!Array.isArray(value)) return []
+  return limitHistory(
+    value.filter((item): item is HistoryItem => {
+      if (!item || typeof item !== 'object') return false
+      const candidate = item as Partial<HistoryItem>
+      return Boolean(candidate.id && candidate.kind && candidate.title && candidate.answer && candidate.createdAt)
+    }),
+  )
+}
+
+function mergeHistory(primary: HistoryItem[], secondary: HistoryItem[]): HistoryItem[] {
+  const byId = new Map<string, HistoryItem>()
+  for (const item of [...primary, ...secondary]) byId.set(item.id, item)
+  return limitHistory([...byId.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)))
+}
+
+function queueHistoryRender(): void {
+  if (renderQueued || typeof document === 'undefined') return
+  renderQueued = true
+  queueMicrotask(() => {
+    renderQueued = false
+    renderHistory()
+  })
+}
+
+function createHistoryEmptyElement(): HTMLDivElement {
+  const empty = document.createElement('div')
+  empty.className = 'history-empty'
+  empty.textContent = '暂无历史记录'
+  return empty
+}
+
+function createHistoryErrorElement(): HTMLDivElement {
+  const errorElement = document.createElement('div')
+  errorElement.className = 'history-error'
+  errorElement.textContent = `历史存储提示：${lastHistoryError}`
+  return errorElement
 }
 
 function limitHistory(items: HistoryItem[]): HistoryItem[] {
@@ -87,6 +252,28 @@ function createHistoryElement(item: HistoryItem): HTMLDetailsElement {
   const summary = document.createElement('summary')
   summary.textContent = `${formatKind(item.kind)} · ${item.title} · ${formatTime(item.createdAt)}`
   details.append(summary)
+
+  if (item.thumbnailDataUrl) {
+    const thumbnail = document.createElement('img')
+    thumbnail.className = 'history-thumbnail'
+    thumbnail.alt = item.summary || item.title || '历史缩略图'
+    thumbnail.src = item.thumbnailDataUrl
+    thumbnail.loading = 'lazy'
+    thumbnail.style.width = '96px'
+    thumbnail.style.height = '72px'
+    thumbnail.style.objectFit = 'cover'
+    thumbnail.style.borderRadius = '10px'
+    thumbnail.style.border = '1px solid rgba(103, 246, 232, 0.22)'
+    thumbnail.style.marginTop = '10px'
+    details.append(thumbnail)
+  }
+
+  if (item.summary) {
+    const itemSummary = document.createElement('div')
+    itemSummary.className = 'history-summary'
+    itemSummary.textContent = item.summary
+    details.append(itemSummary)
+  }
 
   if (item.input) {
     const input = document.createElement('div')
@@ -136,6 +323,8 @@ function createHistoryElement(item: HistoryItem): HTMLDetailsElement {
           input: item.input,
           answer: item.answer,
           detail: item.detail,
+          summary: item.summary,
+          thumbnailDataUrl: item.thumbnailDataUrl,
         },
       }),
     )

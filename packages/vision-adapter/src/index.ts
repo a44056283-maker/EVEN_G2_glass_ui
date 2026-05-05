@@ -3,6 +3,7 @@ import type { VisionRequest } from '@g2vva/shared'
 export interface VisionDescription {
   description: string
   provider: string
+  confidence?: number
 }
 
 export async function describeImage(request: VisionRequest): Promise<VisionDescription> {
@@ -32,9 +33,7 @@ async function describeWithMiniMaxVlm(request: VisionRequest): Promise<VisionDes
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      prompt:
-        request.prompt ??
-        '请真实识别这张手机摄像头图片。用中文简要说明画面中的主要人物、物体、文字、场景和需要注意的信息。不要编造看不见的内容。',
+      prompt: buildVisionPrompt(request),
       image_url: `data:${request.mimeType ?? 'image/jpeg'};base64,${request.imageBase64}`,
     }),
   })
@@ -69,7 +68,7 @@ async function describeWithHttpVlm(request: VisionRequest): Promise<VisionDescri
       'Content-Type': 'application/json',
       ...(process.env.VISION_HTTP_API_KEY ? { Authorization: `Bearer ${process.env.VISION_HTTP_API_KEY}` } : {}),
     },
-    body: JSON.stringify(request),
+    body: JSON.stringify({ ...request, prompt: buildVisionPrompt(request) }),
   })
 
   if (!response.ok) {
@@ -77,9 +76,24 @@ async function describeWithHttpVlm(request: VisionRequest): Promise<VisionDescri
     throw new Error(`HTTP VLM failed: ${response.status} ${text}`)
   }
 
-  const data = (await response.json()) as { description?: string; text?: string; answer?: string }
+  const data = (await response.json()) as { description?: string; text?: string; answer?: string; confidence?: number }
   return {
     provider: 'http-vlm',
     description: data.description ?? data.text ?? data.answer ?? '视觉接口没有返回描述。',
+    confidence: data.confidence,
   }
+}
+
+function buildVisionPrompt(request: VisionRequest): string {
+  return [
+    '请真实识别这张手机摄像头图片。用中文简要说明画面中的主要人物、物体、文字、场景和需要注意的信息。',
+    '必须区分你实际看见的内容和上下文推断；不要编造看不见的内容。',
+    '如果画面模糊、遮挡、曝光不足或无法确认，请明确说明不确定点。',
+    request.capturedAt ? `拍摄时间：${request.capturedAt}` : '',
+    request.locationContext ? `位置上下文：${request.locationContext}` : '',
+    request.recentVisionContext ? `近期视觉上下文：${request.recentVisionContext}` : '',
+    request.prompt ? `用户问题：${request.prompt}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n')
 }

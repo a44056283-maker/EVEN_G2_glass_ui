@@ -5,24 +5,35 @@ import type {
   TradingReadonlyOverview,
   TranscribeResponse,
   TtsResponse,
+  VisionRequest,
   VisionResponse,
 } from '@g2vva/shared'
 import type { CapturedImage } from './camera'
 import { getAppConfig } from './config'
 import type { G2MicRecording } from './g2-mic'
+import { formatLocationForPrompt, getLocationContext } from './locationContext'
 import type { PhoneMicRecording } from './voice/phoneMicRecorder'
 
 const jsonHeaders = { 'Content-Type': 'text/plain;charset=UTF-8' }
 
-export async function recognizeImage(image: CapturedImage, prompt?: string): Promise<VisionResponse> {
+export type RecognizeImageOptions = Pick<VisionRequest, 'capturedAt' | 'locationContext' | 'recentVisionContext'>
+
+export async function recognizeImage(image: CapturedImage, prompt?: string, options: RecognizeImageOptions = {}): Promise<VisionResponse> {
+  const config = getAppConfig()
+  const locationContext = options.locationContext ?? await safeGetLocationContext(config.enableLocationContext)
+  const payload: VisionRequest = {
+    ...image,
+    prompt,
+    capturedAt: options.capturedAt ?? new Date().toISOString(),
+    locationContext,
+    recentVisionContext: options.recentVisionContext,
+    locale: navigator.language || 'zh-CN',
+  }
+
   const response = await fetch(`${getApiBase()}/vision`, {
     method: 'POST',
     headers: jsonHeaders,
-    body: JSON.stringify({
-      ...image,
-      prompt,
-      locale: navigator.language || 'zh-CN',
-    }),
+    body: JSON.stringify(payload),
   })
 
   if (!response.ok) {
@@ -170,4 +181,16 @@ async function readError(response: Response): Promise<string> {
 
 function getApiBase(): string {
   return getAppConfig().apiBase
+}
+
+async function safeGetLocationContext(enabled: boolean): Promise<string | undefined> {
+  if (!enabled) return undefined
+
+  try {
+    return formatLocationForPrompt(await getLocationContext(true))
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    console.warn('Location context unavailable; continuing vision request.', error)
+    return `定位状态：${message || 'error'}。定位失败不影响识图。`
+  }
 }
