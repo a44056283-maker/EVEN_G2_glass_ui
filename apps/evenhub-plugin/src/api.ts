@@ -5,6 +5,7 @@ import type {
   TradingReadonlyOverview,
   TranscribeResponse,
   TtsResponse,
+  AskRequest,
   VisionRequest,
   VisionResponse,
 } from '@g2vva/shared'
@@ -17,6 +18,7 @@ import type { PhoneMicRecording } from './voice/phoneMicRecorder'
 const jsonHeaders = { 'Content-Type': 'text/plain;charset=UTF-8' }
 
 export type RecognizeImageOptions = Pick<VisionRequest, 'capturedAt' | 'locationContext' | 'recentVisionContext'>
+export type AskAssistantOptions = Pick<AskRequest, 'capturedAt' | 'locationContext'>
 
 export async function recognizeImage(image: CapturedImage, prompt?: string, options: RecognizeImageOptions = {}): Promise<VisionResponse> {
   const config = getAppConfig()
@@ -62,13 +64,19 @@ export async function requestTts(text: string): Promise<TtsResponse> {
   return response.json()
 }
 
-export async function askAssistant(question: string, lastVisionSummary?: string): Promise<AskResponse> {
+export async function askAssistant(
+  question: string,
+  lastVisionSummary?: string,
+  options: AskAssistantOptions = {},
+): Promise<AskResponse> {
   const response = await fetch(`${getApiBase()}/ask`, {
     method: 'POST',
     headers: jsonHeaders,
     body: JSON.stringify({
       question,
       lastVisionSummary,
+      capturedAt: options.capturedAt,
+      locationContext: options.locationContext,
       locale: navigator.language || 'zh-CN',
     }),
   })

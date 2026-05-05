@@ -123,7 +123,12 @@ app.post<{ Body: VisionRequest; Reply: VisionResponse }>('/vision', async (reque
 })
 
 app.post<{ Body: AskRequest & { text?: string; userId?: string }; Reply: AskResponse }>('/ask', async (request) => {
-  return answerQuestion(request.body.question ?? request.body.text ?? '', request.body.lastVisionSummary, request.body.locale)
+  return answerQuestion(request.body.question ?? request.body.text ?? '', {
+    lastVisionSummary: request.body.lastVisionSummary,
+    locale: request.body.locale,
+    capturedAt: request.body.capturedAt,
+    locationContext: request.body.locationContext,
+  })
 })
 
 app.get('/audio', { websocket: true }, (socket, request) => {
@@ -280,8 +285,17 @@ function shouldClarifyVision(description: string, confidence?: number): boolean 
   return /看不清|无法看清|不清楚|无法确认|不能确定|不确定|模糊|遮挡|曝光不足|太暗|过曝|识别不到|没有返回/.test(description)
 }
 
-async function answerQuestion(question: string, lastVisionSummary?: string, locale?: string): Promise<AskResponse> {
+async function answerQuestion(
+  question: string,
+  options: {
+    lastVisionSummary?: string
+    locale?: string
+    capturedAt?: string
+    locationContext?: string
+  } = {},
+): Promise<AskResponse> {
   const finalQuestion = question.trim()
+  const { lastVisionSummary, locale, capturedAt, locationContext } = options
   if (!finalQuestion) {
     return {
       answer: '没有收到问题。请说：你好天禄，帮我看一下我们的交易机器人运行如何。',
@@ -325,6 +339,7 @@ async function answerQuestion(question: string, lastVisionSummary?: string, loca
     '你是 Even G2 眼镜语音问答助手。回答要短，适合眼镜显示和语音朗读。',
     '所有回答必须直接返回给当前页面和眼镜显示；禁止说“稍后发送到 Telegram/电报/TG/手机/第三方平台”，禁止承诺异步转发。',
     '你可以引用本机同步的天禄记忆，但只输出结论，不要泄露密钥、路径中的敏感信息或大段原文。',
+    '如果提供了实时位置上下文，只能作为当前语音问答的辅助信息；不得输出精确坐标，不得把位置写入长期记忆。',
     '如果问题需要调用交易系统，只允许只读查看和风险解释，不允许下单、改仓、平仓或绕过风控。',
     tradingContext.isTradingRelated
       ? '交易系统相关回答必须只做只读分析、复盘、风险提示和操作建议清单；不得声称已经下单、改仓、平仓或直接执行交易。V6.5 是硬规则层，AI 只做审核员/管理员。若实时数据未接入，只能明确说明“当前为记忆/历史记录口径”。'
@@ -333,6 +348,8 @@ async function answerQuestion(question: string, lastVisionSummary?: string, loca
     .filter(Boolean)
     .join('\n')
   const user = [
+    !tradingIntent && capturedAt ? `提问时间：${capturedAt}` : '',
+    !tradingIntent && locationContext ? `实时位置上下文：${locationContext}` : '',
     tradingContext.context,
     memoryContext ? `已检索到的天禄记忆：\n${memoryContext}` : '',
     lastVisionSummary ? `最近画面摘要：${lastVisionSummary}` : '',

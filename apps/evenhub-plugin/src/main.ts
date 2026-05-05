@@ -1267,7 +1267,12 @@ async function askVisionFollowup(question: string, source = 'vision-followup'): 
     selectG2Bookmark('vision')
     setVisionResultPanel('追问中', contextParts.join('\n'), `问题：${trimmed}\n天禄正在结合最近画面回答...`)
     await safeGlassShow(renderer, 'voice_transcript', { transcript: trimmed })
-    const response = await askAssistant(trimmed, contextParts.join('\n'))
+    const location = await getLocationContext(getAppConfig().enableLocationContext)
+    const locationContext = formatLocationForPrompt(location)
+    const response = await askAssistant(trimmed, contextParts.join('\n'), {
+      capturedAt: new Date().toISOString(),
+      locationContext,
+    })
     const sanitizedAnswer = sanitizeDirectTianluAnswer(response.answer)
     const answer = isFallbackOnlyAnswer(sanitizedAnswer)
       ? `结合最近视觉结果：${lastVisionAnswer || lastVisionSummary}\n\n追问：${trimmed}`
@@ -2120,7 +2125,14 @@ async function runAssistantQuestion(transcript: string): Promise<void> {
   setVoiceTranscript(`你：${transcript}`)
   setVoiceStatus('天禄思考中...')
   await renderer.show('voice_transcript', { transcript: finalQuestion })
-  const response = await askAssistant(finalQuestion, lastVisionSummary)
+  const shouldAttachLocation = !isTradingVoiceIntent(finalQuestion)
+  const locationContext = shouldAttachLocation
+    ? formatLocationForPrompt(await getLocationContext(getAppConfig().enableLocationContext))
+    : undefined
+  const response = await askAssistant(finalQuestion, lastVisionSummary, {
+    capturedAt: new Date().toISOString(),
+    locationContext,
+  })
   const sanitizedAnswer = sanitizeDirectTianluAnswer(response.answer)
   const answer = isFallbackOnlyAnswer(sanitizedAnswer) ? buildFrontendGeneralFallback(finalQuestion) : sanitizedAnswer
   const input = document.querySelector<HTMLTextAreaElement>('#text-question-input')
@@ -2130,7 +2142,11 @@ async function runAssistantQuestion(transcript: string): Promise<void> {
     title: question ? '天禄语音问答' : '手动文本对话',
     input: transcript,
     answer,
-    detail: [response.provider ? `来源：${response.provider}` : '', lastVisionSummary ? `最近画面：${lastVisionSummary}` : '']
+    detail: [
+      response.provider ? `来源：${response.provider}` : '',
+      locationContext ? '已加入实时定位上下文' : '',
+      lastVisionSummary ? `最近画面：${lastVisionSummary}` : '',
+    ]
       .filter(Boolean)
       .join('\n') || undefined,
   })

@@ -13,7 +13,7 @@ export const defaultConfig: AppConfig = {
   g2RecordMs: 120000,
   autoSpeak: true,
   autoListenOnStart: false,
-  enableLocationContext: false,
+  enableLocationContext: true,
 }
 
 const storageKey = 'g2-vva-config-v2'

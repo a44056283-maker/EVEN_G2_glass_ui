@@ -25,6 +25,8 @@ export interface AskRequest {
   question: string
   lastVisionSummary?: string
   locale?: LocaleCode
+  capturedAt?: string
+  locationContext?: string
 }
 
 export interface AskResponse {
