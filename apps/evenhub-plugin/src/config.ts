@@ -7,8 +7,10 @@ export interface AppConfig {
   enableLocationContext: boolean
 }
 
+const env = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env ?? {}
+
 export const defaultConfig: AppConfig = {
-  apiBase: import.meta.env.VITE_API_BASE ?? 'https://g2-vision.tianlu2026.org',
+  apiBase: env.VITE_API_BASE ?? 'https://g2-vision.tianlu2026.org',
   ttsVoiceId: 'female-shaonv',
   g2RecordMs: 120000,
   autoSpeak: true,

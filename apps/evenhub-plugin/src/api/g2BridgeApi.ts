@@ -1,7 +1,8 @@
-const defaultHttpUrl = import.meta.env.VITE_G2_BRIDGE_HTTP_URL ?? 'https://g2-vision.tianlu2026.org'
+const env = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env ?? {}
+
+const defaultHttpUrl = env.VITE_G2_BRIDGE_HTTP_URL ?? 'https://g2-vision.tianlu2026.org'
 const defaultWsUrl =
-  import.meta.env.VITE_G2_BRIDGE_WS_URL ?? defaultHttpUrl.replace(/^http/i, (match: string) => (match === 'https' ? 'wss' : 'ws'))
-const defaultToken = import.meta.env.VITE_G2_SESSION_TOKEN ?? ''
+  env.VITE_G2_BRIDGE_WS_URL ?? defaultHttpUrl.replace(/^http/i, (match: string) => (match === 'https' ? 'wss' : 'ws'))
 
 export function getG2BridgeHttpUrl(): string {
   return String(defaultHttpUrl).replace(/\/+$/, '')
@@ -9,10 +10,6 @@ export function getG2BridgeHttpUrl(): string {
 
 export function getG2BridgeWsUrl(): string {
   return String(defaultWsUrl).replace(/\/+$/, '')
-}
-
-export function getG2SessionToken(): string {
-  return String(defaultToken)
 }
 
 export async function postVision(imageBase64: string, prompt?: string): Promise<{ answer: string }> {
@@ -36,14 +33,12 @@ export async function postAsk(text: string): Promise<{ answer: string; audioUrl?
 }
 
 export function connectAudioWebSocket(): WebSocket {
-  return new WebSocket(`${getG2BridgeWsUrl()}/audio?token=${encodeURIComponent(getG2SessionToken())}`)
+  return new WebSocket(`${getG2BridgeWsUrl()}/audio`)
 }
 
 function bridgeHeaders(): HeadersInit {
-  const token = getG2SessionToken()
   return {
     'Content-Type': 'text/plain;charset=UTF-8',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   }
 }
 

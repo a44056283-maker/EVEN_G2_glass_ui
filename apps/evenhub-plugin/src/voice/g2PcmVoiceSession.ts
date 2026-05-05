@@ -1,5 +1,5 @@
 import type { EvenAppBridge, EvenHubEvent } from '@evenrealities/even_hub_sdk'
-import { getG2BridgeWsUrl, getG2SessionToken } from '../api/g2BridgeApi'
+import { getG2BridgeWsUrl } from '../api/g2BridgeApi'
 
 export type VoiceSessionMode = 'probe' | 'mock-asr' | 'asr'
 export type StopReason = 'released' | 'clicked_stop' | 'max_duration' | 'cancelled' | 'no_pcm' | 'error'
@@ -68,7 +68,6 @@ export async function startG2PcmVoiceSession(options: G2PcmVoiceSessionOptions):
   const params = new URLSearchParams({
     mode,
     source: 'g2',
-    token: getG2SessionToken(),
   })
   if (options.mockText) params.set('mockText', options.mockText)
 

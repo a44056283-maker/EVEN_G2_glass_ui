@@ -252,11 +252,6 @@ async function main(): Promise<void> {
   void hydrateHistoryInBackground()
   void initOptionalDiagnosticsInBackground()
 
-  document.querySelector<HTMLButtonElement>('#capture-button')?.addEventListener('click', () => {
-    void unlockAudioPlayback()
-    // 只切换手机页面，不触发 G2 业务逻辑
-    setPhoneActiveBookmark('vision')
-  })
   const handleManualImageInput = (event: Event): void => {
     if (isFileInputRequestActive()) return
     const file = (event.currentTarget as HTMLInputElement | null)?.files?.[0]
@@ -280,31 +275,6 @@ async function main(): Promise<void> {
     void unlockAudioPlayback()
     setInteractionFeedback('相册选图 已触发')
     setVisionResultPanel('等待选图', '正在打开手机相册...', '请选择一张照片，返回后会自动上传识别。')
-  })
-  document.querySelector<HTMLButtonElement>('#voice-button')?.addEventListener('click', () => {
-    void unlockAudioPlayback()
-    // 只切换手机页面，不触发 G2 业务逻辑
-    setPhoneActiveBookmark('voice')
-  })
-  document.querySelector<HTMLButtonElement>('#trading-button')?.addEventListener('click', () => {
-    void unlockAudioPlayback()
-    // 只切换手机页面，不触发 G2 业务逻辑
-    setPhoneActiveBookmark('trading')
-  })
-  document.querySelector<HTMLButtonElement>('#settings-button')?.addEventListener('click', () => {
-    void unlockAudioPlayback()
-    // 切换到系统设置书签，同时显示眼镜设置页
-    void enterSettingsPage()
-  })
-  document.querySelector<HTMLButtonElement>('#openclaw-button')?.addEventListener('click', () => {
-    void unlockAudioPlayback()
-    // 只切换手机页面，不触发 G2 业务逻辑
-    setPhoneActiveBookmark('openclaw')
-  })
-  document.querySelector<HTMLButtonElement>('#history-button')?.addEventListener('click', () => {
-    void unlockAudioPlayback()
-    setPhoneActiveBookmark('history')
-    renderHistory()
   })
   document.querySelector<HTMLButtonElement>('#refresh-trading-button')?.addEventListener('click', () => {
     void unlockAudioPlayback()
@@ -555,15 +525,25 @@ function bindBookmarkTabsByEventDelegation(): void {
   const tabs = document.querySelector<HTMLElement>('.bookmark-tabs')
   if (!tabs || tabs.dataset.delegatedBound === 'true') return
   tabs.dataset.delegatedBound = 'true'
-  tabs.addEventListener('click', (event) => {
+  let lastHandledAt = 0
+  let lastHandledId = ''
+  const activate = (event: Event): void => {
     const target = (event.target as HTMLElement | null)?.closest<HTMLElement>('[data-bookmark]')
     if (!target) return
     const id = target.getAttribute('data-bookmark')
     if (!isPhoneBookmarkId(id)) return
+    const now = Date.now()
+    if (id === lastHandledId && now - lastHandledAt < 350) return
+    lastHandledId = id
+    lastHandledAt = now
+    event.preventDefault()
     void unlockAudioPlayback()
     setPhoneActiveBookmark(id)
     if (id === 'history') void hydrateHistoryInBackground()
-  })
+  }
+  tabs.addEventListener('click', activate)
+  tabs.addEventListener('pointerup', activate)
+  tabs.addEventListener('touchend', activate, { passive: false })
 }
 
 function isPhoneBookmarkId(value: string | null): value is PhoneBookmarkId {
@@ -1579,7 +1559,9 @@ async function startG2HoldToTalkSession(
         status: String(Math.round((debug.elapsedMs ?? 0) / 1000)),
         pcmBytes: debug.totalBytes,
         chunks: debug.chunks,
-      }))
+      })).catch((error) => {
+        console.warn('[G2 voice] recording text update failed', error)
+      })
     },
     onTranscript: (text, meta) => {
       activeG2PcmVoiceSession = undefined
@@ -2633,13 +2615,9 @@ async function executeFocusedControl(): Promise<void> {
     await runTradingOverview()
     return
   }
-  if (control.id === 'settings-button') {
+  if (control.id === 'openclaw-button') {
     selectG2Bookmark('settings')
     await enterSettingsPage()
-    return
-  }
-  if (control.id === 'openclaw-button') {
-    setPhoneActiveBookmark('openclaw')
     return
   }
   if (control.id === 'history-button') {
@@ -3110,6 +3088,7 @@ async function runPermissionSelfCheck(requestAccess: boolean): Promise<void> {
   lines.push(`麦克风策略：${runtimeCapabilities.micStrategy}`)
   lines.push(`安全上下文：${window.isSecureContext ? 'OK' : 'NO'}`)
   lines.push(`mediaDevices：${typeof navigator.mediaDevices?.getUserMedia === 'function' ? 'OK' : 'NO'}`)
+  lines.push(`geolocation：${typeof navigator.geolocation?.getCurrentPosition === 'function' ? 'OK' : 'NO'}`)
   lines.push(`G2 Bridge：${bridge ? 'OK' : '未连接'}`)
 
   if (requestAccess) {
@@ -3150,10 +3129,22 @@ async function runPermissionSelfCheck(requestAccess: boolean): Promise<void> {
         lines.push(`G2 麦克风开关：FAIL ${formatShortError(error)}`)
       }
     }
+
+    try {
+      const location = await getLocationContext(true)
+      if (location.status === 'ready') {
+        lines.push(`定位：OK ${location.approximate || '已获取'}${location.accuracyMeters ? `，约 ${location.accuracyMeters} 米` : ''}`)
+      } else {
+        lines.push(`定位：${location.status.toUpperCase()} ${location.message || '未获取'}`)
+      }
+    } catch (error) {
+      lines.push(`定位：FAIL ${formatShortError(error)}`)
+    }
   } else {
     const engine = getVisionEngineState()
     lines.push(`视觉引擎：${engine.status}${engine.videoWidth ? ` ${engine.videoWidth}x${engine.videoHeight}` : ''}`)
     lines.push(runtimeCapabilities.hasBridge ? '权限：Even 插件内不强行请求手机相机/麦克风' : '相机/麦克风：点“一键请求权限”检测')
+    lines.push('定位：点“一键请求权限”检测系统授权')
   }
 
   const result = lines.join('\n')
@@ -3515,7 +3506,7 @@ function renderControlFocus(): void {
       'capture-button': 'vision',
       'voice-button': 'voice',
       'trading-button': 'trading',
-      'settings-button': 'openclaw',
+      'openclaw-button': 'openclaw',
     }
     const bookmarkId = controlToBookmark[selected.id]
     if (bookmarkId) setPhoneActiveBookmark(bookmarkId)
@@ -4048,7 +4039,7 @@ function getG2BookmarkBody(id: G2BookmarkId): string {
 
 function getSelectableControls(): Array<{ id: string; label: string; button: HTMLButtonElement }> {
   // 眼镜首页 ring 导航：只限于 4 个主书签，禁止跳到手机端辅助按钮
-  const mainBookmarkIds = ['capture-button', 'voice-button', 'trading-button', 'settings-button']
+  const mainBookmarkIds = ['capture-button', 'voice-button', 'trading-button', 'openclaw-button']
   const isOnHome = activeGlassPage === 'home'
   const ids = isOnHome
     ? mainBookmarkIds
@@ -4089,8 +4080,7 @@ function getControlLabel(id: string, button: HTMLButtonElement): string {
   if (id === 'capture-button') return '拍照识别'
   if (id === 'voice-button') return '呼叫天禄'
   if (id === 'trading-button') return '交易状态'
-  if (id === 'settings-button') return '系统设置'
-  if (id === 'openclaw-button') return 'OpenCLAW 对话'
+  if (id === 'openclaw-button') return '系统设置'
   if (id === 'history-button') return '历史记录'
   if (id === 'vision-capture-action') return '拍照识别'
   if (id === 'vision-replay-action') return '重播识别结果'

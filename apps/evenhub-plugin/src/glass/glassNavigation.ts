@@ -20,7 +20,7 @@ export const glassBookmarks: GlassBookmark[] = [
   { id: 'vision', title: '视觉识别', controlId: 'capture-button', action: '单击拍照识别' },
   { id: 'voice', title: '呼叫天禄', controlId: 'voice-button', action: '单击开始语音问答' },
   { id: 'trading', title: '交易状态', controlId: 'trading-button', action: '单击刷新交易只读' },
-  { id: 'settings', title: '系统设置', controlId: 'settings-button', action: '单击进入系统设置' },
+  { id: 'settings', title: '系统设置', controlId: 'openclaw-button', action: '单击进入系统设置' },
 ]
 
 export function getGlassBookmarkById(id: GlassBookmarkId): GlassBookmark | undefined {

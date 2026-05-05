@@ -3,7 +3,7 @@
   "edition": "202601",
   "name": "天禄 G2 助手",
   "description": "视觉·语音·交易三位一体智能眼镜助手",
-  "version": "0.5.24",
+  "version": "0.5.26",
   "min_app_version": "2.0.0",
   "min_sdk_version": "0.0.9",
   "entrypoint": "index.html",
@@ -28,6 +28,10 @@
     {
       "name": "phone-microphone",
       "desc": "Use phone or Bluetooth headset microphone only as an optional fallback for diagnostics and voice commands."
+    },
+    {
+      "name": "location",
+      "desc": "Use approximate phone location as optional context for vision and Tianlu voice answers."
     },
     {
       "name": "network",

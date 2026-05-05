@@ -3,7 +3,6 @@ import { waitForEvenAppBridge } from '@evenrealities/even_hub_sdk'
 
 export interface G2MicStreamOptions {
   wsUrl: string
-  sessionToken: string
   onStatus?: (text: string) => void
   onTranscript?: (text: string) => void
   onAnswer?: (text: string, audioUrl?: string) => void
@@ -13,7 +12,7 @@ export interface G2MicStreamOptions {
 
 export async function startG2MicStream(options: G2MicStreamOptions): Promise<() => Promise<void>> {
   const bridge = await waitForEvenAppBridge()
-  const ws = new WebSocket(`${options.wsUrl.replace(/\/+$/, '')}/audio?token=${encodeURIComponent(options.sessionToken)}`)
+  const ws = new WebSocket(`${options.wsUrl.replace(/\/+$/, '')}/audio`)
   ws.binaryType = 'arraybuffer'
 
   let totalBytes = 0

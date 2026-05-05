@@ -5,6 +5,7 @@ import {
   ImageRawDataUpdate,
   ImageRawDataUpdateResult,
   RebuildPageContainer,
+  StartUpPageCreateResult,
   TextContainerProperty,
   TextContainerUpgrade,
 } from '@evenrealities/even_hub_sdk'
@@ -24,7 +25,11 @@ export class GlassRenderer {
 
   async init(screen: GlassScreenId = 'home', state: Omit<GlassScreenState, 'battery'> = {}): Promise<void> {
     if (!this.bridge) return
-    await this.bridge.createStartUpPageContainer(this.buildStartup(screen, state))
+    const result = await this.bridge.createStartUpPageContainer(this.buildStartup(screen, state))
+    const normalized = StartUpPageCreateResult.normalize(result)
+    if (normalized !== StartUpPageCreateResult.success) {
+      throw new Error(`G2 startup page create failed: ${String(result)}`)
+    }
   }
 
   buildStartup(screen: GlassScreenId, state: Omit<GlassScreenState, 'battery'> = {}): CreateStartUpPageContainer {
@@ -35,14 +40,15 @@ export class GlassRenderer {
     const page = this.buildPage(screen, state)
     this.publishDebug(page.textObject?.[0]?.content ?? '')
     if (!this.bridge) return
-    await this.bridge.rebuildPageContainer(page)
+    const ok = await this.bridge.rebuildPageContainer(page)
+    if (!ok) throw new Error(`G2 rebuild page failed: ${screen}`)
   }
 
   async updateMainText(content: string): Promise<void> {
     const nextContent = sanitizeForG2Text(content)
     this.publishDebug(nextContent)
     if (!this.bridge) return
-    await this.bridge.textContainerUpgrade(
+    const ok = await this.bridge.textContainerUpgrade(
       new TextContainerUpgrade({
         containerID: GLASS_MAIN_CONTAINER_ID,
         containerName: GLASS_MAIN_CONTAINER_NAME,
@@ -51,6 +57,7 @@ export class GlassRenderer {
         content: nextContent,
       }),
     )
+    if (!ok) throw new Error('G2 text container upgrade failed')
   }
 
   async update(content: string): Promise<void> {
@@ -91,11 +98,12 @@ export class GlassRenderer {
       containerName: imageContainerName,
     })
 
-    await this.bridge.rebuildPageContainer(new RebuildPageContainer({
+    const pageOk = await this.bridge.rebuildPageContainer(new RebuildPageContainer({
       containerTotalNum: 2,
       textObject: [text],
       imageObject: [image],
     }))
+    if (!pageOk) throw new Error('G2 image preview page rebuild failed')
 
     this.imageQueue = this.imageQueue
       .catch(() => undefined)

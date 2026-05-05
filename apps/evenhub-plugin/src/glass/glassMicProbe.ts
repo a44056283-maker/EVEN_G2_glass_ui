@@ -1,5 +1,5 @@
 import type { EvenAppBridge, EvenHubEvent } from '@evenrealities/even_hub_sdk'
-import { getG2BridgeWsUrl, getG2SessionToken } from '../api/g2BridgeApi'
+import { getG2BridgeWsUrl } from '../api/g2BridgeApi'
 import { GlassRenderer } from './GlassRenderer'
 
 export interface GlassMicProbeOptions {
@@ -53,7 +53,7 @@ export async function startGlassMicProbe(options: GlassMicProbeOptions): Promise
     backendBytes,
   })
 
-  const ws = new WebSocket(`${getG2BridgeWsUrl().replace(/\/+$/, '')}/audio?mode=${encodeURIComponent(mode)}&source=g2&token=${encodeURIComponent(getG2SessionToken())}`)
+  const ws = new WebSocket(`${getG2BridgeWsUrl().replace(/\/+$/, '')}/audio?mode=${encodeURIComponent(mode)}&source=g2`)
   ws.binaryType = 'arraybuffer'
   console.log('[G2 MicProbe] connecting audio websocket', ws.url)
 
@@ -81,7 +81,9 @@ export async function startGlassMicProbe(options: GlassMicProbeOptions): Promise
       lastChunkBytes,
       backendBytes,
     })
-    void renderer.updateMainText(content)
+    void renderer.updateMainText(content).catch((error) => {
+      console.warn('[G2 MicProbe] text update failed', error)
+    })
     publishDebug()
   }
 
