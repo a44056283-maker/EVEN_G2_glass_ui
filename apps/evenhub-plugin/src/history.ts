@@ -51,6 +51,20 @@ export function addHistory(item: Omit<HistoryItem, 'id' | 'createdAt'>): History
   return historyItem
 }
 
+export function updateHistoryItem(id: string, patch: Partial<Omit<HistoryItem, 'id' | 'createdAt'>>): HistoryItem | undefined {
+  const currentHistory = getHistory()
+  const index = currentHistory.findIndex((item) => item.id === id)
+  if (index < 0) return undefined
+  const nextItem = { ...currentHistory[index], ...patch }
+  const next = currentHistory.slice()
+  next[index] = nextItem
+  cachedHistory = limitHistory(next)
+  memoryHistoryFallback = cachedHistory.slice(0, MAX_HISTORY)
+  historyVersion += 1
+  persistHistory(cachedHistory)
+  return nextItem
+}
+
 export function getHistory(): HistoryItem[] {
   if (!loadStarted) {
     loadStarted = true

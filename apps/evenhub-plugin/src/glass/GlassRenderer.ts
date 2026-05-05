@@ -97,17 +97,36 @@ export class GlassRenderer {
       imageObject: [image],
     }))
 
-    this.imageQueue = this.imageQueue.then(async () => {
-      const result = await this.bridge!.updateImageRawData(new ImageRawDataUpdate({
-        containerID: imageContainerId,
-        containerName: imageContainerName,
-        imageData: imageBase64,
-      }))
-      if (!ImageRawDataUpdateResult.isSuccess(ImageRawDataUpdateResult.normalize(result))) {
-        throw new Error(`G2 image preview failed: ${String(result)}`)
-      }
-    })
+    this.imageQueue = this.imageQueue
+      .catch(() => undefined)
+      .then(() => this.updatePreviewImage(imageContainerId, imageContainerName, imageBase64))
     await this.imageQueue
+  }
+
+  private async updatePreviewImage(containerID: number, containerName: string, imageBase64: string): Promise<void> {
+    const rawResult = await this.tryUpdatePreviewImage(containerID, containerName, imageBase64)
+    if (rawResult.ok) return
+
+    const dataUrlResult = await this.tryUpdatePreviewImage(containerID, containerName, `data:image/jpeg;base64,${imageBase64}`)
+    if (dataUrlResult.ok) return
+
+    throw new Error(`G2 image preview failed: base64=${rawResult.result}; dataUrl=${dataUrlResult.result}`)
+  }
+
+  private async tryUpdatePreviewImage(
+    containerID: number,
+    containerName: string,
+    imageData: string,
+  ): Promise<{ ok: boolean; result: unknown }> {
+    const result = await this.bridge!.updateImageRawData(new ImageRawDataUpdate({
+      containerID,
+      containerName,
+      imageData,
+    }))
+    return {
+      ok: ImageRawDataUpdateResult.isSuccess(ImageRawDataUpdateResult.normalize(result)),
+      result,
+    }
   }
 
   render(screen: GlassScreenId, state: Omit<GlassScreenState, 'battery'> = {}): string {

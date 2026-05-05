@@ -31,7 +31,7 @@ import {
 import { getAppConfig, resetAppConfig, saveAppConfig } from './config'
 import { formatForG2, getGlassBatteryText, setDeviceBatteryLevels, showBookmarkOnG2, showOnG2, startWebClock } from './display'
 import { getControlDirection, getControlIntent, isClickEvent } from './events'
-import { addHistory, clearHistory, renderHistory } from './history'
+import { addHistory, clearHistory, renderHistory, updateHistoryItem } from './history'
 import { formatInputEventForLog, normalizeEvenInputEvent } from './input/normalizeEvenInputEvent'
 import { formatLocationForPrompt, getLocationContext } from './locationContext'
 import { installRuntimeErrorReporter, recordRuntimeError } from './runtimeErrorReporter'
@@ -1012,6 +1012,19 @@ async function runCaptureFlow(prompt?: string, preparedImage?: CapturedImage, op
       estimatedBytes: imageBytes,
       prompt: effectivePrompt,
     })
+    const thumbnailDataUrl = await createVisionPreviewDataUrl(image, 240, 240, 0.62)
+    const imageDataUrl = createCapturedImageDataUrl(image)
+    const captureHistory = addHistory({
+      kind: 'vision',
+      title: effectivePrompt ? '天禄看图' : '拍照识别',
+      input: effectivePrompt || undefined,
+      answer: '照片已采集，正在上传识别。',
+      detail: `图片大小：约 ${formatBytes(imageBytes)}`,
+      summary: '照片已采集',
+      thumbnailDataUrl,
+      imageDataUrl,
+    })
+    renderHistory()
     const g2PreviewBase64 = await createVisionPreviewBase64(image, 288, 144, 0.56)
     if (g2PreviewBase64) {
       await safeGlassImagePreview(renderer, g2PreviewBase64, '照片已采集')
@@ -1059,17 +1072,10 @@ async function runCaptureFlow(prompt?: string, preparedImage?: CapturedImage, op
     lastVisionAnswer = result.answer
     lastVisionPrompt = effectivePrompt
     renderBookmarkChrome()
-    const thumbnailDataUrl = await createVisionPreviewDataUrl(image, 240, 240, 0.62)
-    const imageDataUrl = createCapturedImageDataUrl(image)
-    addHistory({
-      kind: 'vision',
-      title: effectivePrompt ? '天禄看图' : '拍照识别',
-      input: effectivePrompt || undefined,
+    updateHistoryItem(captureHistory.id, {
       answer: result.answer,
       detail: result.description,
       summary: result.description,
-      thumbnailDataUrl,
-      imageDataUrl,
     })
     renderHistory()
     if (!prompt && effectivePrompt) clearVisionQuestionInput()
