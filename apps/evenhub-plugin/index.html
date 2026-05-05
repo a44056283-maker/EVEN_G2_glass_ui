@@ -221,8 +221,19 @@
         </label>
         <label class="config-checkbox">
           <input id="config-location-context" type="checkbox" />
-          视觉识别加入粗略定位
+          视觉识别和呼叫天禄加入实时定位
         </label>
+        <div class="location-tools">
+          <div class="permission-title">实时定位诊断</div>
+          <pre id="location-status-debug">定位：未检测
+权限：—
+粗略地址：—
+精度：—</pre>
+          <div class="permission-actions">
+            <button id="location-check-button" type="button">检测定位</button>
+            <button id="location-request-button" type="button">请求定位</button>
+          </div>
+        </div>
         <div class="tts-tools">
           <div class="permission-title">朗读设置</div>
           <pre id="tts-status-debug">当前 voiceId：待查询
